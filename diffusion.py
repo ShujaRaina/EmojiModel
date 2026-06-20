@@ -125,15 +125,19 @@ class Diffusion(L.LightningModule):
     self.valid_metrics = metrics.clone(prefix='val/')
     self.test_metrics = metrics.clone(prefix='test/')
 
-    # generative perplexity
+    # Generative perplexity is optional and requires an external LM tokenizer.
+    # Skip loading it for emoji-only training/smoke runs so offline jobs do not
+    # make unnecessary Hugging Face requests.
     self.gen_ppl_metric = Perplexity()
-    self.eval_model_tokenizer = transformers.AutoTokenizer.\
-      from_pretrained(self.gen_ppl_eval_model_name_or_path)
-    if self.eval_model_tokenizer.pad_token is None:
-      self.eval_model_tokenizer.pad_token =\
-          self.eval_model_tokenizer.eos_token
-      self.eval_model_tokenizer.pad_token_id =\
-          self.eval_model_tokenizer.eos_token_id
+    self.eval_model_tokenizer = None
+    if self.config.eval.compute_generative_perplexity:
+      self.eval_model_tokenizer = transformers.AutoTokenizer.\
+        from_pretrained(self.gen_ppl_eval_model_name_or_path)
+      if self.eval_model_tokenizer.pad_token is None:
+        self.eval_model_tokenizer.pad_token =\
+            self.eval_model_tokenizer.eos_token
+        self.eval_model_tokenizer.pad_token_id =\
+            self.eval_model_tokenizer.eos_token_id
 
     self.noise = noise_schedule.get_noise(self.config,
                                           dtype=self.dtype)
@@ -249,7 +253,7 @@ class Diffusion(L.LightningModule):
           pin_memory=self.config.loader.pin_memory,
           sampler=dl_sampler,
           shuffle=False,
-          persistent_workers=True))
+          persistent_workers=self.config.loader.num_workers > 0))
     self.trainer.fit_loop._combined_loader.flattened = updated_dls
 
   def optimizer_step(self, *args, **kwargs):
@@ -731,13 +735,18 @@ class Diffusion(L.LightningModule):
     return samples
 
   @torch.no_grad()
-  def _cond_sample(self, prefix_ids, num_steps=None, eps=1e-5):
+  def _cond_sample(
+      self, prefix_ids, num_steps=None, eps=1e-5,
+      max_response_tokens=None):
     """Conditional infilling: clamp `prefix_ids` and generate the rest.
 
     Args:
       prefix_ids: list of token-id lists. Each prefix occupies the start of
         the sequence and is held fixed throughout the reverse process; the
         remaining positions (up to `model.length`) are infilled.
+      max_response_tokens: optional cap on generated response tokens. When
+        set, `[EOS]` is clamped after this many response positions and `[PAD]`
+        is clamped after EOS, matching the training layout.
     Returns:
       LongTensor of shape (len(prefix_ids), model.length).
     """
@@ -753,6 +762,13 @@ class Diffusion(L.LightningModule):
       x[i, :len(prefix)] = torch.tensor(
         prefix, dtype=torch.int64, device=self.device)
       fixed[i, :len(prefix)] = True
+      if max_response_tokens is not None and len(prefix) < length:
+        eos_pos = min(len(prefix) + max_response_tokens, length - 1)
+        x[i, eos_pos] = self.tokenizer.eos_token_id
+        fixed[i, eos_pos] = True
+        if eos_pos + 1 < length and self.tokenizer.pad_token_id is not None:
+          x[i, eos_pos + 1:] = self.tokenizer.pad_token_id
+          fixed[i, eos_pos + 1:] = True
     x_fixed = x.clone()
     timesteps = torch.linspace(
       1, eps, num_steps + 1, device=self.device)
@@ -786,7 +802,8 @@ class Diffusion(L.LightningModule):
     return x
 
   def restore_model_and_cond_sample(
-      self, prefix_ids, num_steps=None, eps=1e-5):
+      self, prefix_ids, num_steps=None, eps=1e-5,
+      max_response_tokens=None):
     """EMA-aware wrapper around `_cond_sample`."""
     if self.ema:
       self.ema.store(itertools.chain(
@@ -798,7 +815,10 @@ class Diffusion(L.LightningModule):
     self.backbone.eval()
     self.noise.eval()
     samples = self._cond_sample(
-      prefix_ids, num_steps=num_steps, eps=eps)
+      prefix_ids,
+      num_steps=num_steps,
+      eps=eps,
+      max_response_tokens=max_response_tokens)
     if self.ema:
       self.ema.restore(itertools.chain(
         self.backbone.parameters(),
@@ -896,7 +916,7 @@ class Diffusion(L.LightningModule):
       return self.noise.importance_sampling_transformation(t)
     return t
 
-  def _maybe_sub_sample(self, x0, attention_mask):
+  def _maybe_sub_sample(self, x0, attention_mask, cond_mask=None):
     seqlen = x0.shape[1]
     if seqlen > self.config.model.length:
       assert seqlen == 2 * self.config.model.length
@@ -907,6 +927,7 @@ class Diffusion(L.LightningModule):
       input_tokens = x0[:, start: end]
       output_tokens = x0[:, start + 1: end + 1]
       new_attention_mask = attention_mask[:, start: end]
+      new_cond_mask = cond_mask[:, start: end] if cond_mask is not None else None
 
       # Helps with validation PPL, since the val
       # examples will all start and end with BOS/EOS
@@ -916,11 +937,13 @@ class Diffusion(L.LightningModule):
       input_tokens = x0[:, :-1]
       output_tokens = x0[:, 1:]
       new_attention_mask = attention_mask[:, 1:]
+      new_cond_mask = cond_mask[:, 1:] if cond_mask is not None else None
     else:
       input_tokens = x0
       output_tokens = None
       new_attention_mask = attention_mask
-    return input_tokens, output_tokens, new_attention_mask
+      new_cond_mask = cond_mask
+    return input_tokens, output_tokens, new_attention_mask, new_cond_mask
 
   def _reconstruction_loss(self, x0):
     t0 = torch.zeros(x0.shape[0], dtype=self.dtype,
@@ -984,8 +1007,8 @@ class Diffusion(L.LightningModule):
 
   def _loss(self, x0, attention_mask, cond_mask=None):
     (input_tokens, output_tokens,
-     attention_mask) = self._maybe_sub_sample(
-       x0, attention_mask)
+     attention_mask, cond_mask) = self._maybe_sub_sample(
+       x0, attention_mask, cond_mask=cond_mask)
 
     if self.parameterization == 'ar':
       logprobs = self.backbone(input_tokens, None)

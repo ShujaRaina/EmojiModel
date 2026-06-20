@@ -1,5 +1,6 @@
 #!/bin/bash
-# Train a text -> emoji masked diffusion model on KomeijiForce/Text2Emoji.
+# Train Phase 1 emoji-only diffusion data on KomeijiForce/Text2Emoji.
+# Text is not tokenized; sequences contain only atomic emoji plus controls.
 #
 # GPU (recommended): trains the `tiny-emoji` backbone end to end.
 #   bash scripts/train_text2emoji.sh

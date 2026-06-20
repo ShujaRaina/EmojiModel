@@ -1,0 +1,24 @@
+{"canonical_id":"celebration_win","prompt_emoji":"🎉🥳👏","response_emoji":"🙌🏆✨","instruction":"curated permutation: celebration win","input":"","output":"🙌🏆✨","topic":"permutation_celebration"}
+{"canonical_id":"celebration_win","prompt_emoji":"👏🎉🥳","response_emoji":"🏆✨🙌","instruction":"curated permutation: celebration win","input":"","output":"🏆✨🙌","topic":"permutation_celebration"}
+{"canonical_id":"celebration_win","prompt_emoji":"🥳👏🎉","response_emoji":"✨🙌🏆","instruction":"curated permutation: celebration win","input":"","output":"✨🙌🏆","topic":"permutation_celebration"}
+{"canonical_id":"sad_support","prompt_emoji":"😢💔🌧️","response_emoji":"🤗🙏💛","instruction":"curated permutation: sadness needs support","input":"","output":"🤗🙏💛","topic":"permutation_support"}
+{"canonical_id":"sad_support","prompt_emoji":"🌧️😢💔","response_emoji":"💛🤗🙏","instruction":"curated permutation: sadness needs support","input":"","output":"💛🤗🙏","topic":"permutation_support"}
+{"canonical_id":"sad_support","prompt_emoji":"💔🌧️😢","response_emoji":"🙏💛🤗","instruction":"curated permutation: sadness needs support","input":"","output":"🙏💛🤗","topic":"permutation_support"}
+{"canonical_id":"angry_calm","prompt_emoji":"😡🔥💥","response_emoji":"🧘💧🙏","instruction":"curated permutation: anger deescalation","input":"","output":"🧘💧🙏","topic":"permutation_deescalation"}
+{"canonical_id":"angry_calm","prompt_emoji":"🔥💥😡","response_emoji":"💧🙏🧘","instruction":"curated permutation: anger deescalation","input":"","output":"💧🙏🧘","topic":"permutation_deescalation"}
+{"canonical_id":"angry_calm","prompt_emoji":"💥😡🔥","response_emoji":"🙏🧘💧","instruction":"curated permutation: anger deescalation","input":"","output":"🙏🧘💧","topic":"permutation_deescalation"}
+{"canonical_id":"study_grind","prompt_emoji":"📚☕⏰","response_emoji":"💪🧠✅","instruction":"curated permutation: study effort","input":"","output":"💪🧠✅","topic":"permutation_study"}
+{"canonical_id":"study_grind","prompt_emoji":"⏰📚☕","response_emoji":"🧠✅💪","instruction":"curated permutation: study effort","input":"","output":"🧠✅💪","topic":"permutation_study"}
+{"canonical_id":"study_grind","prompt_emoji":"☕⏰📚","response_emoji":"✅💪🧠","instruction":"curated permutation: study effort","input":"","output":"✅💪🧠","topic":"permutation_study"}
+{"canonical_id":"travel_sun","prompt_emoji":"✈️🌍🏖️","response_emoji":"📸😎✨","instruction":"curated permutation: travel joy","input":"","output":"📸😎✨","topic":"permutation_travel"}
+{"canonical_id":"travel_sun","prompt_emoji":"🏖️✈️🌍","response_emoji":"😎✨📸","instruction":"curated permutation: travel joy","input":"","output":"😎✨📸","topic":"permutation_travel"}
+{"canonical_id":"travel_sun","prompt_emoji":"🌍🏖️✈️","response_emoji":"✨📸😎","instruction":"curated permutation: travel joy","input":"","output":"✨📸😎","topic":"permutation_travel"}
+{"canonical_id":"love_affection","prompt_emoji":"❤️😍😘","response_emoji":"💕🥰✨","instruction":"curated permutation: affection","input":"","output":"💕🥰✨","topic":"permutation_love"}
+{"canonical_id":"love_affection","prompt_emoji":"😘❤️😍","response_emoji":"🥰✨💕","instruction":"curated permutation: affection","input":"","output":"🥰✨💕","topic":"permutation_love"}
+{"canonical_id":"love_affection","prompt_emoji":"😍😘❤️","response_emoji":"✨💕🥰","instruction":"curated permutation: affection","input":"","output":"✨💕🥰","topic":"permutation_love"}
+{"canonical_id":"sick_care","prompt_emoji":"🤒🤧🛌","response_emoji":"🍵💊🙏","instruction":"curated permutation: illness care","input":"","output":"🍵💊🙏","topic":"permutation_care"}
+{"canonical_id":"sick_care","prompt_emoji":"🛌🤒🤧","response_emoji":"💊🙏🍵","instruction":"curated permutation: illness care","input":"","output":"💊🙏🍵","topic":"permutation_care"}
+{"canonical_id":"sick_care","prompt_emoji":"🤧🛌🤒","response_emoji":"🙏🍵💊","instruction":"curated permutation: illness care","input":"","output":"🙏🍵💊","topic":"permutation_care"}
+{"canonical_id":"funny_laugh","prompt_emoji":"😂🤣😆","response_emoji":"😹💀🙌","instruction":"curated permutation: laughter","input":"","output":"😹💀🙌","topic":"permutation_funny"}
+{"canonical_id":"funny_laugh","prompt_emoji":"😆😂🤣","response_emoji":"💀🙌😹","instruction":"curated permutation: laughter","input":"","output":"💀🙌😹","topic":"permutation_funny"}
+{"canonical_id":"funny_laugh","prompt_emoji":"🤣😆😂","response_emoji":"🙌😹💀","instruction":"curated permutation: laughter","input":"","output":"🙌😹💀","topic":"permutation_funny"}

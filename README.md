@@ -175,6 +175,22 @@ python main.py \
 ```
 The arguments `loader.batch_size` and `loader.eval_batch_size` allow you to control the global batch size and the batch size per GPU. If `loader.batch_size * num_gpus` is less than the global batch size, PyTorch Lightning will resort to gradient accumulation. You can also launch a training job on Slurm using the command: `sbatch scripts/train_owt_mdlm.sh`. The slurm scripts to train the Auto-regressive and SEDD baselines are as follows respectively: [`scripts/train_lm1b_ar.sh`](scripts/train_lm1b_ar.sh), [`scripts/train_owt_sedd.sh`](scripts/train_owt_sedd.sh).
 
+### Emoji Atomic Vocabulary
+The emoji configs use `tokenizer_name_or_path=atomic_emoji`, which treats each Unicode emoji grapheme cluster as one token, including flags, skin tones, and ZWJ sequences. Text is filtered out before diffusion inputs are built.
+
+Phase 1 Text2Emoji rows are formatted as `[BOS] emoji_expr [EOS]`:
+```bash
+bash scripts/train_text2emoji.sh
+```
+
+Phase 2 emoji reply rows are formatted as `[BOS] prompt_emoji [SEP] response_emoji [EOS]`. To train on your own JSON/JSONL/CSV/TSV instruction set:
+```bash
+EMOJI_REPLY_DATA_FILE=/path/to/emoji_instructions.jsonl \
+  bash scripts/train_emoji_reply.sh
+```
+
+Supported Phase 2 columns include `prompt_emoji`/`response_emoji`, `source`/`target`, `input`/`output`, `prompt`/`response`, and `instruction`/`output`; non-emoji text is ignored.
+
 ### Eval 
 To compute test perplexity, use `mode=ppl_eval`. Example scripts provided in `scripts/`. An example command for perplexity evaluation on OpenWebText is:
 ```

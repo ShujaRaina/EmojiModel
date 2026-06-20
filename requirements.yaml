@@ -26,9 +26,11 @@ dependencies:
       - omegaconf==2.3.0
       - packaging==23.2
       - pandas==2.2.1
+      - regex
       - rich==13.7.1
       - seaborn==0.13.2
       - scikit-learn==1.4.0
+      - regex
       - timm==0.9.16
       - transformers==4.38.2
       - triton==2.2.0

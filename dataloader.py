@@ -1,4 +1,5 @@
 import functools
+import hashlib
 import itertools
 import json
 import math
@@ -19,6 +20,61 @@ import transformers
 import utils
 
 LOGGER = utils.get_logger(__name__)
+
+try:
+  import regex
+except ImportError:  # pragma: no cover - only hit in incomplete envs.
+  regex = None
+
+
+ATOMIC_EMOJI_SPECIAL_TOKENS = [
+  '[PAD]',
+  '[BOS]',
+  '[EOS]',
+  '[SEP]',
+  '[MASK]',
+  '[UNK_EMOJI]',
+]
+
+COMMON_EMOJI_ALLOWLIST = [
+  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
+  '🙂', '🙃', '😉', '😍', '😘', '😋', '😎', '🤩', '🥳', '😔',
+  '😢', '😭', '😡', '😱', '😴', '🤔', '🤗', '👍', '👎', '👏',
+  '🙌', '🙏', '💪', '👀', '💯', '✨', '🔥', '⭐', '🌟', '💫',
+  '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '💕', '💔',
+  '☀️', '🌧️', '🌈', '⚡', '❄️', '🌊', '🌍', '🌙', '🍕', '🍔',
+  '🍟', '🍎', '🍰', '☕', '🎂', '🎉', '🎁', '🏆', '⚽', '🏀',
+  '🎮', '🎵', '🎬', '📚', '💡', '💻', '📱', '🚗', '✈️', '🏠',
+  '🏫', '💼', '⏰', '✅', '❌', '⚠️', '🚨', '❓', '❗', '➡️',
+  '⬅️', '⬆️', '⬇️', '🇺🇸', '🏳️‍🌈', '👨‍👩‍👧‍👦', '👋', '🤝',
+]
+
+
+def _require_regex():
+  if regex is None:
+    raise ImportError(
+      'Atomic emoji tokenization requires the `regex` package. '
+      'Install project requirements or run `pip install regex`.')
+
+
+def split_graphemes(text):
+  _require_regex()
+  return regex.findall(r'\X', text or '')
+
+
+def is_emoji_grapheme(grapheme):
+  _require_regex()
+  if not grapheme or grapheme.isspace():
+    return False
+  return bool(
+    regex.search(r'\p{Extended_Pictographic}', grapheme)
+    or regex.search(r'\p{Regional_Indicator}', grapheme)
+    or '\u20e3' in grapheme
+    or any('\U000E0020' <= ch <= '\U000E007F' for ch in grapheme))
+
+
+def extract_emoji_graphemes(text):
+  return [g for g in split_graphemes(text) if is_emoji_grapheme(g)]
 
 
 def wt_detokenizer(string):
@@ -156,6 +212,269 @@ class Text8Tokenizer(transformers.PreTrainedTokenizer):
 
   def get_vocab(self) -> typing.Dict[str, int]:
     return self._vocab_str_to_int
+
+
+class AtomicEmojiTokenizer(transformers.PreTrainedTokenizer):
+  """Emoji-only tokenizer where each grapheme cluster is one token."""
+
+  def __init__(self, emoji_tokens=None, **kwargs):
+    emoji_tokens = emoji_tokens or []
+    special_vocab = {
+      token: i for i, token in enumerate(ATOMIC_EMOJI_SPECIAL_TOKENS)}
+    unique_emoji = []
+    seen = set(special_vocab)
+    for token in emoji_tokens:
+      if not is_emoji_grapheme(token):
+        continue
+      if token in seen:
+        continue
+      unique_emoji.append(token)
+      seen.add(token)
+    self._vocab_str_to_int = {
+      **special_vocab,
+      **{
+        token: i + len(special_vocab)
+        for i, token in enumerate(unique_emoji)
+      }}
+    self._vocab_int_to_str = {
+      v: k for k, v in self._vocab_str_to_int.items()}
+    self.emoji_tokens = unique_emoji
+    super().__init__(
+      pad_token='[PAD]',
+      bos_token='[BOS]',
+      eos_token='[EOS]',
+      sep_token='[SEP]',
+      mask_token='[MASK]',
+      unk_token='[UNK_EMOJI]',
+      **kwargs)
+
+  @property
+  def vocab_size(self) -> int:
+    return len(self._vocab_str_to_int)
+
+  def _tokenize(self, text: str, **kwargs) -> typing.List[str]:
+    return extract_emoji_graphemes(text)
+
+  def _convert_token_to_id(self, token: str) -> int:
+    return self._vocab_str_to_int.get(
+      token, self._vocab_str_to_int['[UNK_EMOJI]'])
+
+  def _convert_id_to_token(self, index: int) -> str:
+    return self._vocab_int_to_str.get(index, '[UNK_EMOJI]')
+
+  def convert_tokens_to_string(self, tokens):
+    return ''.join(
+      token for token in tokens
+      if token not in ATOMIC_EMOJI_SPECIAL_TOKENS)
+
+  def build_inputs_with_special_tokens(self, token_ids_0, token_ids_1=None):
+    if token_ids_1 is None:
+      return [self.bos_token_id] + list(token_ids_0) + [self.eos_token_id]
+    return (
+      [self.bos_token_id]
+      + list(token_ids_0)
+      + [self.sep_token_id]
+      + list(token_ids_1)
+      + [self.eos_token_id])
+
+  def get_special_tokens_mask(
+      self, token_ids_0, token_ids_1=None, already_has_special_tokens=False):
+    if already_has_special_tokens:
+      special_ids = set(self.all_special_ids)
+      return [1 if token_id in special_ids else 0
+              for token_id in token_ids_0]
+    if token_ids_1 is None:
+      return [1] + ([0] * len(token_ids_0)) + [1]
+    return (
+      [1]
+      + ([0] * len(token_ids_0))
+      + [1]
+      + ([0] * len(token_ids_1))
+      + [1])
+
+  def create_token_type_ids_from_sequences(
+      self, token_ids_0, token_ids_1=None):
+    return [0] * len(self.build_inputs_with_special_tokens(
+      token_ids_0, token_ids_1))
+
+  def get_vocab(self) -> typing.Dict[str, int]:
+    return dict(self._vocab_str_to_int)
+
+  def save_vocabulary(self, save_directory, filename_prefix=None):
+    if not os.path.isdir(save_directory):
+      os.makedirs(save_directory, exist_ok=True)
+    prefix = filename_prefix + '-' if filename_prefix else ''
+    vocab_file = os.path.join(save_directory, f'{prefix}emoji_vocab.json')
+    with open(vocab_file, 'w', encoding='utf-8') as f:
+      json.dump(self.emoji_tokens, f, ensure_ascii=False, indent=2)
+    return (vocab_file,)
+
+
+def _path_fingerprint(path):
+  return hashlib.sha1(str(path).encode('utf-8')).hexdigest()[:12]
+
+
+def _repo_root():
+  return os.path.dirname(os.path.abspath(__file__))
+
+
+def _resolve_repo_path(path):
+  if not path or '://' in str(path):
+    return path
+  path = str(path)
+  if os.path.isabs(path) or utils.fsspec_exists(path):
+    return path
+  repo_path = os.path.join(_repo_root(), path)
+  if utils.fsspec_exists(repo_path):
+    return repo_path
+  return path
+
+
+def _sorted_emoji_vocab(emoji_strings):
+  vocab = set()
+  for text in emoji_strings:
+    vocab.update(extract_emoji_graphemes(text))
+  return sorted(vocab)
+
+
+def _read_emoji_strings(path):
+  path = _resolve_repo_path(path)
+  if not path or not utils.fsspec_exists(path):
+    return []
+  with fsspec.open(path, 'r', encoding='utf-8') as f:
+    if path.endswith('.jsonl'):
+      rows = [json.loads(line) for line in f if line.strip()]
+    elif path.endswith('.json'):
+      payload = json.load(f)
+      if isinstance(payload, dict):
+        rows = payload.get('data', payload.get('rows', payload))
+        if isinstance(rows, dict):
+          rows = rows.values()
+      else:
+        rows = payload
+    else:
+      return [line.strip() for line in f if line.strip()]
+  strings = []
+  for row in rows:
+    if isinstance(row, dict):
+      for key in (
+          'emoji', 'output', 'response', 'response_emoji', 'target',
+          'target_emoji', 'prompt', 'prompt_emoji', 'instruction', 'input'):
+        if key in row and row[key] is not None:
+          strings.append(str(row[key]))
+    else:
+      strings.append(str(row))
+  return strings
+
+
+def _read_emoji_vocab_cache(path):
+  with fsspec.open(path, 'r', encoding='utf-8') as f:
+    payload = json.load(f)
+  if isinstance(payload, dict):
+    return payload.get('emoji_tokens', [])
+  return payload
+
+
+def _load_emoji_reply_dataset(path, cache_dir):
+  path = _resolve_repo_path(path)
+  ext = os.path.splitext(path)[1].lower()
+  if ext in {'.json', '.jsonl'}:
+    return datasets.load_dataset(
+      'json', data_files=path, split='train', cache_dir=cache_dir)
+  if ext == '.csv':
+    return datasets.load_dataset(
+      'csv', data_files=path, split='train', cache_dir=cache_dir)
+  if ext in {'.tsv', '.txt'}:
+    return datasets.load_dataset(
+      'csv', data_files=path, delimiter='\t',
+      split='train', cache_dir=cache_dir)
+  raise ValueError(
+    'Unsupported emoji_reply data_file. Use JSON, JSONL, CSV, or TSV.')
+
+
+def _normalize_emoji_reply_columns(raw):
+  rename = {}
+  if 'instruction' in raw.column_names and 'text' not in raw.column_names:
+    rename['instruction'] = 'text'
+  if 'output' in raw.column_names and 'emoji' not in raw.column_names:
+    rename['output'] = 'emoji'
+  if rename:
+    raw = raw.rename_columns(rename)
+  return raw
+
+
+def _default_emoji_reply_data_file():
+  return os.path.join(_repo_root(), 'data', 'emoji_reply', 'emoji_reply.jsonl')
+
+
+def _default_emoji_challenge_data_file():
+  return os.path.join(
+    _repo_root(), 'data', 'emoji_reply', 'curated_permutation.jsonl')
+
+
+def _write_emoji_vocab_cache(path, emoji_tokens):
+  parent = os.path.dirname(path)
+  if parent:
+    utils.fsspec_mkdirs(parent, exist_ok=True)
+  with fsspec.open(path, 'w', encoding='utf-8') as f:
+    json.dump({'emoji_tokens': emoji_tokens},
+              f, ensure_ascii=False, indent=2)
+
+
+def _atomic_vocab_cache_path(config):
+  path = config.data.get('emoji_vocab_cache', None)
+  if not path:
+    path = os.path.join(config.data.cache_dir, 'atomic_emoji_vocab.json')
+  return path
+
+
+def _build_atomic_emoji_vocab(config):
+  cache_path = _atomic_vocab_cache_path(config)
+  if cache_path and utils.fsspec_exists(cache_path):
+    LOGGER.info(f'Loading atomic emoji vocab from: {cache_path}')
+    return _read_emoji_vocab_cache(cache_path)
+
+  emoji_strings = []
+  sources = config.data.get(
+    'emoji_vocab_sources', ['text2emoji', 'data_file', 'common'])
+  if 'text2emoji' in sources:
+    try:
+      raw = datasets.load_dataset(
+        'KomeijiForce/Text2Emoji',
+        split='train',
+        cache_dir=config.data.cache_dir)
+      emoji_strings.extend(raw['emoji'])
+    except Exception as exc:
+      LOGGER.warning(
+        'Could not load KomeijiForce/Text2Emoji while building the '
+        f'atomic emoji vocab; falling back to configured lists. {exc}')
+  if 'data_file' in sources:
+    data_file = config.data.get('data_file', None)
+    if not data_file and config.data.get('train', None) == 'emoji_reply':
+      data_file = _default_emoji_reply_data_file()
+    data_file = _resolve_repo_path(data_file)
+    emoji_strings.extend(_read_emoji_strings(data_file))
+  if 'curated' in sources:
+    challenge_path = (
+      config.data.get('emoji_challenge_set_path', None)
+      or _default_emoji_challenge_data_file())
+    challenge_path = _resolve_repo_path(challenge_path)
+    emoji_strings.extend(_read_emoji_strings(challenge_path))
+  if 'common' in sources:
+    emoji_strings.extend(COMMON_EMOJI_ALLOWLIST)
+  for extra_file in config.data.get('emoji_vocab_extra_files', []):
+    emoji_strings.extend(_read_emoji_strings(extra_file))
+
+  emoji_tokens = _sorted_emoji_vocab(emoji_strings)
+  if not emoji_tokens:
+    raise ValueError(
+      'Atomic emoji vocab is empty. Provide Text2Emoji, data.data_file, '
+      'data.emoji_challenge_set_path, or include common in '
+      'data.emoji_vocab_sources.')
+  if cache_path:
+    LOGGER.info(f'Writing atomic emoji vocab to: {cache_path}')
+    _write_emoji_vocab_cache(cache_path, emoji_tokens)
+  return emoji_tokens
 
 
 def get_lambada_test_dataset():
@@ -300,46 +619,92 @@ def _group_texts(examples, block_size, bos, eos):
   return result
 
 
-def _tokenize_text2emoji(example, tokenizer, block_size, eot,
-                         max_emoji_tokens=32):
-  """Builds fixed-length `<eot> text <eot> emoji <eot>` sequences.
+def _pad_tokenized_sequence(seq, pad_id, block_size):
+  seq = seq[:block_size]
+  attention = [1] * len(seq)
+  if len(seq) < block_size:
+    pad = block_size - len(seq)
+    seq = seq + [pad_id] * pad
+    attention = attention + [0] * pad
+  return seq, attention
 
-  The shared `<eot>` token (gpt2 `<|endoftext|>`) marks the start, the
-  text/emoji boundary and the end. At sampling time we clamp the
-  `<eot> text <eot>` prefix and let the model infill the emoji span up to
-  the next `<eot>`. Padding uses `<eot>` too but is zeroed out via the
-  attention mask so it never contributes to the loss.
-  """
+
+def _first_present(example, names):
+  for name in names:
+    if name in example:
+      return example[name]
+  return None
+
+
+def _first_emoji_value(example, names, index):
+  for name in names:
+    if name not in example:
+      continue
+    value = example[name][index]
+    if value is None:
+      continue
+    value = str(value)
+    if extract_emoji_graphemes(value):
+      return value
+  return None
+
+
+def _tokenize_text2emoji(example, tokenizer, block_size, eot=None,
+                         paired=False,
+                         max_emoji_tokens=32):
+  """Build fixed-length emoji-only training sequences."""
   input_ids_batch = []
   attention_batch = []
   cond_batch = []
-  for text, emoji in zip(example['text'], example['emoji']):
-    text = text if text is not None else ''
-    emoji = emoji if emoji is not None else ''
-    text_ids = tokenizer(text, add_special_tokens=False)['input_ids']
-    emoji_ids = tokenizer(emoji, add_special_tokens=False)['input_ids']
-    emoji_ids = emoji_ids[:max_emoji_tokens]
-    # Reserve 3 slots for the `<eot>` markers; truncate text first so the
-    # emoji target always survives truncation.
-    avail_text = block_size - 3 - len(emoji_ids)
-    if avail_text < 0:
-      emoji_ids = emoji_ids[:block_size - 3]
-      avail_text = 0
-    text_ids = text_ids[:avail_text]
-    prefix = [eot] + text_ids + [eot]       # clamped conditioning context
-    seq = prefix + emoji_ids + [eot]
-    seq = seq[:block_size]
-    # cond_mask=1 marks the conditioning prefix that is never noised and
-    # never contributes to the loss (the model conditions on it). The emoji
-    # span + its terminating `<eot>` (cond_mask=0) are what we diffuse.
-    cond = [1] * min(len(prefix), block_size)
-    cond = cond + [0] * (len(seq) - len(cond))
-    attention = [1] * len(seq)
-    if len(seq) < block_size:
-      pad = block_size - len(seq)
-      seq = seq + [eot] * pad
-      attention = attention + [0] * pad
-      cond = cond + [0] * pad
+  prompt_columns = [
+    'prompt_emoji', 'source_emoji', 'input_emoji',
+    'prompt', 'source', 'input', 'instruction', 'text']
+  response_columns = [
+    'response_emoji', 'target_emoji', 'output_emoji',
+    'response', 'target', 'output', 'emoji']
+
+  if paired:
+    size = len(next(iter(example.values())))
+    rows = (
+      (_first_emoji_value(example, prompt_columns, i),
+       _first_emoji_value(example, response_columns, i))
+      for i in range(size))
+  else:
+    rows = ((emoji, None) for emoji in example['emoji'])
+
+  for left_emoji, right_emoji in rows:
+    if paired and not left_emoji and not right_emoji:
+      continue
+    left_emoji = left_emoji if left_emoji is not None else ''
+    left_ids = tokenizer(
+      left_emoji, add_special_tokens=False)['input_ids']
+    left_ids = left_ids[:max_emoji_tokens]
+    if right_emoji is None:
+      seq = [tokenizer.bos_token_id] + left_ids + [tokenizer.eos_token_id]
+      cond = [0] * len(seq)
+    else:
+      right_emoji = right_emoji if right_emoji is not None else ''
+      right_ids = tokenizer(
+        right_emoji, add_special_tokens=False)['input_ids']
+      right_ids = right_ids[:max_emoji_tokens]
+      avail_left = block_size - 3 - len(right_ids)
+      if avail_left < 0:
+        right_ids = right_ids[:block_size - 3]
+        avail_left = 0
+      left_ids = left_ids[:avail_left]
+      prefix = (
+        [tokenizer.bos_token_id]
+        + left_ids
+        + [tokenizer.sep_token_id])
+      seq = prefix + right_ids + [tokenizer.eos_token_id]
+      cond = [1] * min(len(prefix), block_size)
+      cond = cond + [0] * (len(seq) - len(cond))
+    seq, attention = _pad_tokenized_sequence(
+      seq, tokenizer.pad_token_id, block_size)
+    if len(cond) < block_size:
+      cond = cond + [0] * (block_size - len(cond))
+    else:
+      cond = cond[:block_size]
     input_ids_batch.append(seq)
     attention_batch.append(attention)
     cond_batch.append(cond)
@@ -350,11 +715,40 @@ def _tokenize_text2emoji(example, tokenizer, block_size, eot,
 
 def get_dataset(
     dataset_name, tokenizer, wrap, mode, cache_dir,
-    block_size=1024, num_proc=len(os.sched_getaffinity(0)), streaming=False):
+    block_size=1024, num_proc=len(os.sched_getaffinity(0)), streaming=False,
+    data_config=None):
+  data_config = data_config or {}
+  tokenizer_tag = 'atomic_emoji' if isinstance(
+    tokenizer, AtomicEmojiTokenizer) else re.sub(
+      r'[^A-Za-z0-9_.-]+', '_',
+      getattr(tokenizer, 'name_or_path', None) or type(tokenizer).__name__)
+  if isinstance(tokenizer, AtomicEmojiTokenizer):
+    tokenizer_tag = (
+      f'{tokenizer_tag}_{data_config.get("emoji_cache_version", "v2")}')
+  cache_dataset_name = dataset_name
+  if dataset_name == 'emoji_reply' and data_config.get('data_file', None):
+    data_file = _resolve_repo_path(data_config.get('data_file', None))
+    cache_dataset_name = (
+      f'{dataset_name}_{_path_fingerprint(data_file)}')
+  if dataset_name == 'emoji_reply' and data_config.get(
+      'emoji_include_challenge_in_train', False):
+    challenge_path = (
+      data_config.get('emoji_challenge_set_path', None)
+      or _default_emoji_challenge_data_file())
+    challenge_path = _resolve_repo_path(challenge_path)
+    cache_dataset_name = (
+      f'{cache_dataset_name}_challenge_{_path_fingerprint(challenge_path)}')
+    repeat = data_config.get('emoji_challenge_repeat', 1)
+    if repeat and int(repeat) != 1:
+      cache_dataset_name = f'{cache_dataset_name}_r{int(repeat)}'
   if wrap:
-    filename = f'{dataset_name}_{mode}_bs{block_size}_wrapped.dat'
+    filename = (
+      f'{cache_dataset_name}_{tokenizer_tag}_{mode}_bs{block_size}'
+      '_wrapped.dat')
   else:
-    filename = f'{dataset_name}_{mode}_bs{block_size}_unwrapped.dat'
+    filename = (
+      f'{cache_dataset_name}_{tokenizer_tag}_{mode}_bs{block_size}'
+      '_unwrapped.dat')
   _path = os.path.join(cache_dir, filename)
   
   if utils.fsspec_exists(_path):
@@ -429,14 +823,28 @@ def get_dataset(
     dataset = datasets.DatasetDict(
       {'train': split['train'], 'validation': split['test']})
   elif dataset_name == 'emoji_reply':
-    # Local synthetic instruction-tuning set built by
-    # scripts/build_emoji_reply_dataset.py (instruction -> emoji reply).
-    repo_root = os.path.dirname(os.path.abspath(__file__))
-    data_file = os.path.join(
-      repo_root, 'data', 'emoji_reply', 'emoji_reply.jsonl')
-    raw = datasets.load_dataset(
-      'json', data_files=data_file, split='train', cache_dir=cache_dir)
-    raw = raw.rename_columns({'instruction': 'text', 'output': 'emoji'})
+    # Local instruction-tuning set. Defaults to the synthetic set built by
+    # scripts/build_emoji_reply_dataset.py, but `data.data_file` can point to
+    # the user's JSON/JSONL/CSV/TSV file.
+    data_file = (
+      data_config.get('data_file', None) or _default_emoji_reply_data_file())
+    data_file = _resolve_repo_path(data_file)
+    raw = _normalize_emoji_reply_columns(
+      _load_emoji_reply_dataset(data_file, cache_dir))
+    if data_config.get('emoji_include_challenge_in_train', False):
+      challenge_path = (
+        data_config.get('emoji_challenge_set_path', None)
+        or _default_emoji_challenge_data_file())
+      challenge_path = _resolve_repo_path(challenge_path)
+      if utils.fsspec_exists(challenge_path):
+        challenge = _normalize_emoji_reply_columns(
+          _load_emoji_reply_dataset(challenge_path, cache_dir))
+        repeat = max(1, int(data_config.get('emoji_challenge_repeat', 1)))
+        raw = datasets.concatenate_datasets([raw] + [challenge] * repeat)
+      else:
+        LOGGER.warning(
+          'emoji_include_challenge_in_train is true, but no challenge '
+          f'dataset exists at {challenge_path}.')
     split = raw.train_test_split(test_size=0.05, seed=42)
     dataset = datasets.DatasetDict(
       {'train': split['train'], 'validation': split['test']})
@@ -476,9 +884,12 @@ def get_dataset(
   BOS = tokenizer.encode(tokenizer.bos_token)[0]
 
   def preprocess_and_tokenize(example):
-    if dataset_name in ('text2emoji', 'emoji_reply'):
+    if dataset_name == 'text2emoji':
       return _tokenize_text2emoji(
-        example, tokenizer, block_size, EOS)
+        example, tokenizer, block_size, EOS, paired=False)
+    if dataset_name == 'emoji_reply':
+      return _tokenize_text2emoji(
+        example, tokenizer, block_size, EOS, paired=True)
     if dataset_name == 'ptb':
       text = example['sentence']
     elif 'scientific_papers' in dataset_name:
@@ -516,12 +927,16 @@ def get_dataset(
       batched=True,
       desc='Tokenizing')
   else:
+    map_kwargs = {
+      'batched': True,
+      'load_from_cache_file': dataset_name not in {'text2emoji', 'emoji_reply'},
+      'desc': 'Tokenizing',
+    }
+    if num_proc and num_proc > 1:
+      map_kwargs['num_proc'] = num_proc
     tokenized_dataset = data.map(
       preprocess_and_tokenize,
-      batched=True,
-      num_proc=num_proc,
-      load_from_cache_file=True,
-      desc='Tokenizing')
+      **map_kwargs)
   if dataset_name == 'ptb':
     tokenized_dataset = tokenized_dataset.remove_columns(
       'sentence')
@@ -535,8 +950,11 @@ def get_dataset(
     tokenized_dataset = tokenized_dataset.remove_columns(
       ['text', 'emoji', 'topic'])
   elif dataset_name == 'emoji_reply':
-    tokenized_dataset = tokenized_dataset.remove_columns(
-      ['text', 'emoji', 'input', 'topic'])
+    remove_columns = [
+      column for column in tokenized_dataset.column_names
+      if column not in {'input_ids', 'attention_mask', 'cond_mask'}]
+    if remove_columns:
+      tokenized_dataset = tokenized_dataset.remove_columns(remove_columns)
   else:
     tokenized_dataset = tokenized_dataset.remove_columns(
       'text')
@@ -553,12 +971,16 @@ def get_dataset(
       batched=True,
       desc='Grouping')
   else:
+    map_kwargs = {
+      'batched': True,
+      'load_from_cache_file': dataset_name not in {'text2emoji', 'emoji_reply'},
+      'desc': 'Grouping',
+    }
+    if num_proc and num_proc > 1:
+      map_kwargs['num_proc'] = num_proc
     chunked_dataset = tokenized_dataset.map(
       group_texts,
-      batched=True,
-      num_proc=num_proc,
-      load_from_cache_file=True,
-      desc='Grouping')
+      **map_kwargs)
     chunked_dataset.save_to_disk(_path)
   chunked_dataset = chunked_dataset.with_format('torch')
   return chunked_dataset
@@ -567,6 +989,8 @@ def get_dataset(
 def get_tokenizer(config):
   if config.data.tokenizer_name_or_path == 'text8':
     tokenizer = Text8Tokenizer()
+  elif config.data.tokenizer_name_or_path == 'atomic_emoji':
+    tokenizer = AtomicEmojiTokenizer(_build_atomic_emoji_vocab(config))
   elif config.data.tokenizer_name_or_path == 'bert-base-uncased':
     tokenizer = transformers.BertTokenizer.\
       from_pretrained('bert-base-uncased')
@@ -601,6 +1025,60 @@ def get_tokenizer(config):
   return tokenizer
     
 
+def _shuffle_span(seq, start, end):
+  if end - start <= 1:
+    return
+  perm = torch.randperm(end - start, device=seq.device) + start
+  seq[start:end] = seq[perm]
+
+
+def _apply_emoji_permutation_augmentation(batch, tokenizer, data_config):
+  prob = float(data_config.get('permutation_augment_prob', 0.0) or 0.0)
+  if prob <= 0:
+    return batch
+  if not isinstance(tokenizer, AtomicEmojiTokenizer):
+    return batch
+  input_ids = batch.get('input_ids', None)
+  cond_mask = batch.get('cond_mask', None)
+  if input_ids is None or cond_mask is None:
+    return batch
+
+  shuffle_prompt = data_config.get('permutation_augment_prompt', True)
+  shuffle_response = data_config.get('permutation_augment_response', True)
+  sep_id = tokenizer.sep_token_id
+  eos_id = tokenizer.eos_token_id
+  pad_id = tokenizer.pad_token_id
+  for i in range(input_ids.shape[0]):
+    if torch.rand((), device=input_ids.device).item() >= prob:
+      continue
+    seq = input_ids[i]
+    sep_positions = (seq == sep_id).nonzero(as_tuple=False).flatten()
+    if not len(sep_positions):
+      continue
+    sep = int(sep_positions[0].item())
+    if shuffle_prompt:
+      _shuffle_span(seq, 1, sep)
+    if shuffle_response:
+      tail = seq[sep + 1:]
+      end_offsets = ((tail == eos_id) | (tail == pad_id)).nonzero(
+        as_tuple=False).flatten()
+      end = sep + 1 + int(end_offsets[0].item()) if len(end_offsets) else len(seq)
+      _shuffle_span(seq, sep + 1, end)
+  return batch
+
+
+def _emoji_collate_fn(tokenizer, data_config, train):
+  default_collate = torch.utils.data.default_collate
+  if not train:
+    return default_collate
+
+  def collate(examples):
+    batch = default_collate(examples)
+    return _apply_emoji_permutation_augmentation(
+      batch, tokenizer, data_config)
+  return collate
+
+
 def get_dataloaders(config, tokenizer, skip_train=False,
                     skip_valid=False, valid_seed=None):
   # On CPU-only machines `device_count()` is 0; treat as a single device so
@@ -630,7 +1108,9 @@ def get_dataloaders(config, tokenizer, skip_train=False,
       mode='train',
       wrap=config.data.wrap,
       cache_dir=config.data.cache_dir,
-      block_size=config.model.length)
+      block_size=config.model.length,
+      num_proc=config.loader.num_workers,
+      data_config=config.data)
   
   if config.data.valid in ['text8', 'lm1b', 'ag_news']:
     validation_split = 'test'
@@ -646,7 +1126,9 @@ def get_dataloaders(config, tokenizer, skip_train=False,
       mode=validation_split,
       cache_dir=config.data.cache_dir,
       block_size=config.model.length,
-      streaming=False)
+      num_proc=config.loader.num_workers,
+      streaming=False,
+      data_config=config.data)
 
   if skip_train:
     train_loader = None
@@ -657,7 +1139,8 @@ def get_dataloaders(config, tokenizer, skip_train=False,
       num_workers=config.loader.num_workers,
       pin_memory=config.loader.pin_memory,
       shuffle=not config.data.streaming,
-      persistent_workers=True)
+      persistent_workers=config.loader.num_workers > 0,
+      collate_fn=_emoji_collate_fn(tokenizer, config.data, train=True))
     train_loader.tokenizer = tokenizer
   if skip_valid:
     valid_loader = None
@@ -674,7 +1157,8 @@ def get_dataloaders(config, tokenizer, skip_train=False,
       num_workers=config.loader.num_workers,
       pin_memory=config.loader.pin_memory,
       shuffle=shuffle_valid,
-      generator=generator)
+      generator=generator,
+      collate_fn=_emoji_collate_fn(tokenizer, config.data, train=False))
     # Will be used in generative perplexity calculation
     valid_loader.tokenizer = tokenizer
 

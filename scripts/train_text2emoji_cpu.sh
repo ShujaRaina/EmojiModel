@@ -1,7 +1,8 @@
 #!/bin/bash
-# CPU-only training of the text -> emoji diffusion model. Useful for machines
-# without a GPU (no flash-attn / mamba kernels required). This trains a small
-# proof-of-concept model; use scripts/train_text2emoji.sh on a GPU for quality.
+# CPU-only Phase 1 training on emoji-only Text2Emoji sequences. Useful for
+# machines without a GPU (no flash-attn / mamba kernels required). This trains
+# a small proof-of-concept model; use scripts/train_text2emoji.sh on a GPU for
+# quality.
 set -e
 
 export WANDB_MODE=${WANDB_MODE:-disabled}

@@ -3,6 +3,7 @@ import os
 import fsspec
 import hydra
 import lightning as L
+import numpy as np
 import omegaconf
 import rich.syntax
 import rich.tree
@@ -20,6 +21,12 @@ omegaconf.OmegaConf.register_new_resolver(
   'eval', eval)
 omegaconf.OmegaConf.register_new_resolver(
   'div_up', lambda x, y: (x + y - 1) // y)
+
+# Some transitive GPU-kernel dependencies still reference deprecated NumPy
+# aliases during import. Patch them once at process startup so flash-attn/Triton
+# paths work with modern NumPy.
+if not hasattr(np, 'int'):
+  np.int = int
 
 
 def _load_from_checkpoint(config, tokenizer):
@@ -173,6 +180,15 @@ def _train(config, logger, tokenizer):
 
   model = diffusion.Diffusion(
     config, tokenizer=valid_ds.tokenizer)
+  init_from_ckpt_path = config.checkpointing.get(
+    'init_from_ckpt_path', None)
+  if init_from_ckpt_path and utils.fsspec_exists(init_from_ckpt_path):
+    logger.info(
+      'Initializing model weights from checkpoint: '
+      f'{init_from_ckpt_path}')
+    checkpoint = torch.load(
+      init_from_ckpt_path, map_location='cpu', weights_only=False)
+    model.load_state_dict(checkpoint['state_dict'], strict=True)
 
   trainer = hydra.utils.instantiate(
     config.trainer,
@@ -188,6 +204,8 @@ def _train(config, logger, tokenizer):
 def main(config):
   """Main entry point for training."""
   L.seed_everything(config.seed)
+  if torch.cuda.is_available():
+    torch.set_float32_matmul_precision('high')
   _print_config(config, resolve=True, save_cfg=True)
   
   logger = utils.get_logger(__name__)

@@ -1,8 +1,21 @@
 train: text2emoji
 valid: text2emoji
-tokenizer_name_or_path: gpt2
+tokenizer_name_or_path: atomic_emoji
 cache_dir: ${oc.env:HOME}/mdlm_data
-# Sequences are built as `<eot> text <eot> emoji <eot>` and padded to
-# `model.length`, so we do NOT pack/concatenate examples.
+# Phase 1 sequences are `[BOS] emoji_expr [EOS]`; text is not tokenized into
+# the diffusion vocabulary.
+emoji_vocab_sources:
+  - text2emoji
+  - common
+emoji_vocab_extra_files: []
+emoji_vocab_cache: ${.cache_dir}/atomic_emoji_vocab.json
+emoji_cache_version: v4
+emoji_challenge_set_path: data/emoji_reply/curated_permutation.jsonl
+data_file: null
+emoji_include_challenge_in_train: false
+emoji_challenge_repeat: 1
+permutation_augment_prob: 0.0
+permutation_augment_prompt: true
+permutation_augment_response: true
 wrap: False
 streaming: False

@@ -1,11 +1,12 @@
 import contextlib
 import math
+import os
 import typing
 
 try:
   import flash_attn
   import flash_attn.layers.rotary
-  FLASH_ATTN_AVAILABLE = True
+  FLASH_ATTN_AVAILABLE = os.environ.get('DISABLE_FLASH_ATTN', '0') != '1'
 except ImportError:
   flash_attn = None
   FLASH_ATTN_AVAILABLE = False
@@ -18,7 +19,7 @@ from einops import rearrange
 
 
 def _autocast(dtype=None):
-  """bf16 autocast on CUDA, no-op elsewhere (e.g. CPU)."""
+  """bf16 autocast for CUDA tensors, no-op elsewhere."""
   if torch.cuda.is_available():
     return torch.cuda.amp.autocast(dtype=dtype)
   return contextlib.nullcontext()
@@ -123,7 +124,7 @@ def rotate_half(x):
 
 
 def apply_rotary_pos_emb(qkv, cos, sin):
-  if FLASH_ATTN_AVAILABLE:
+  if FLASH_ATTN_AVAILABLE and qkv.is_cuda:
     cos = cos[0,:,0,0,:cos.shape[-1]//2]
     sin = sin[0,:,0,0,:sin.shape[-1]//2]
     return flash_attn.layers.rotary.apply_rotary_emb_qkv_(qkv, cos, sin)
@@ -279,7 +280,7 @@ class DDiTBlock(nn.Module):
       cos, sin = rotary_cos_sin
       qkv = apply_rotary_pos_emb(
         qkv, cos.to(qkv.dtype), sin.to(qkv.dtype))
-    if FLASH_ATTN_AVAILABLE:
+    if FLASH_ATTN_AVAILABLE and qkv.is_cuda:
       qkv = rearrange(qkv, 'b s ... -> (b s) ...')
       if seqlens is None:
         cu_seqlens = torch.arange(

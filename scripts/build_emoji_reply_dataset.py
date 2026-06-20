@@ -1,13 +1,12 @@
 """Generate a synthetic *emoji-reply* dataset for instruction tuning.
 
-Each row pairs a natural-language message with an emoji-only reply, grouped by
-topic. The output is Alpaca-style instruction-tuning JSONL:
+Each row pairs an emoji-only prompt with an emoji-only reply, while preserving
+the natural-language source message as offline metadata. The output also keeps
+Alpaca-style fields for compatibility:
 
-    {"instruction": "<message>", "input": "", "output": "<emoji reply>",
+    {"prompt_emoji": "<emoji prompt>", "response_emoji": "<emoji reply>",
+     "instruction": "<message>", "input": "", "output": "<emoji reply>",
      "topic": "<topic>"}
-
-For the text -> emoji diffusion pipeline, map `instruction` -> text and
-`output` -> emoji.
 
 Usage:
     python scripts/build_emoji_reply_dataset.py \
@@ -253,11 +252,13 @@ def build(per_message, k_min, k_max, seed):
       instruction = (prefix + body).strip()
       instruction = instruction[0].upper() + instruction[1:]
       for reply in emoji_combos(pool, k_min, k_max, per_message, rng):
+        prompt = emoji_combos(pool, k_min, k_max, 1, rng)[0]
         pair = (instruction, reply)
         if pair in seen_pairs:
           continue
         seen_pairs.add(pair)
-        rows.append({'instruction': instruction, 'input': '',
+        rows.append({'prompt_emoji': prompt, 'response_emoji': reply,
+                     'instruction': instruction, 'input': '',
                      'output': reply, 'topic': topic})
   rng.shuffle(rows)
   return rows
@@ -282,7 +283,9 @@ def main():
   print(f'Wrote {len(rows)} rows across {len(topics)} topics -> {args.out}')
   print('Sample rows:')
   for r in rows[:8]:
-    print(f"  {r['instruction']!r} -> {r['output']}  ({r['topic']})")
+    print(
+      f"  {r['prompt_emoji']} -> {r['response_emoji']}  "
+      f"({r['instruction']!r}, {r['topic']})")
 
 
 if __name__ == '__main__':
