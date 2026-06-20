@@ -1,0 +1,153 @@
+CONFIG                                                                          
+├── mode                                                                        
+│   └── train                                                                   
+├── diffusion                                                                   
+│   └── absorbing_state                                                         
+├── backbone                                                                    
+│   └── dit                                                                     
+├── parameterization                                                            
+│   └── subs                                                                    
+├── time_conditioning                                                           
+│   └── False                                                                   
+├── T                                                                           
+│   └── 0                                                                       
+├── subs_masking                                                                
+│   └── False                                                                   
+├── seed                                                                        
+│   └── 1                                                                       
+├── loader                                                                      
+│   └── global_batch_size: 128                                                  
+│       eval_global_batch_size: 128                                             
+│       batch_size: 128                                                         
+│       eval_batch_size: 128                                                    
+│       num_workers: 8                                                          
+│       pin_memory: true                                                        
+│                                                                               
+├── sampling                                                                    
+│   └── predictor: ddpm_cache                                                   
+│       steps: 128                                                              
+│       noise_removal: true                                                     
+│       num_sample_batches: 2                                                   
+│       num_sample_log: 2                                                       
+│       semi_ar: false                                                          
+│       stride_length: 1                                                        
+│       num_strides: 1                                                          
+│                                                                               
+├── training                                                                    
+│   └── ema: 0.9999                                                             
+│       antithetic_sampling: true                                               
+│       importance_sampling: false                                              
+│       sampling_eps: 0.001                                                     
+│       change_of_variables: false                                              
+│                                                                               
+├── eval                                                                        
+│   └── checkpoint_path: ''                                                     
+│       disable_ema: false                                                      
+│       compute_generative_perplexity: false                                    
+│       perplexity_batch_size: 8                                                
+│       compute_perplexity_on_sanity: false                                     
+│       gen_ppl_eval_model_name_or_path: gpt2-large                             
+│       generate_samples: true                                                  
+│                                                                               
+├── optim                                                                       
+│   └── weight_decay: 0                                                         
+│       lr: 0.0003                                                              
+│       beta1: 0.9                                                              
+│       beta2: 0.999                                                            
+│       eps: 1.0e-08                                                            
+│                                                                               
+├── trainer                                                                     
+│   └── _target_: lightning.Trainer                                             
+│       accelerator: cuda                                                       
+│       num_nodes: 1                                                            
+│       devices: 1                                                              
+│       accumulate_grad_batches: 1                                              
+│       gradient_clip_val: 1.0                                                  
+│       precision: bf16-mixed                                                   
+│       num_sanity_val_steps: 0                                                 
+│       max_steps: 5                                                            
+│       log_every_n_steps: 5                                                    
+│       limit_train_batches: 1.0                                                
+│       limit_val_batches: 2                                                    
+│       val_check_interval: 5                                                   
+│       check_val_every_n_epoch: null                                           
+│                                                                               
+├── wandb                                                                       
+│   └── project: emoji-model                                                    
+│       notes: Mulan for text                                                   
+│       group: null                                                             
+│       job_type: null                                                          
+│       name: emoji_phase1_semantic_h100_smoke3                                 
+│       id: emoji_phase1_semantic_h100_smoke3                                   
+│       tags:                                                                   
+│       - loglinear                                                             
+│       - emoji_reply                                                           
+│       - emoji_reply                                                           
+│                                                                               
+├── checkpointing                                                               
+│   └── save_dir: /home/ubuntu/EmojiModel/outputs/emoji_two_phase_h100_smoke3/ph
+│       resume_from_ckpt: false                                                 
+│       resume_ckpt_path: /home/ubuntu/EmojiModel/outputs/emoji_two_phase_h100_s
+│                                                                               
+├── callbacks                                                                   
+│   └── checkpoint_every_n_steps:                                               
+│         _target_: lightning.pytorch.callbacks.ModelCheckpoint                 
+│         save_top_k: -1                                                        
+│         save_last: true                                                       
+│         dirpath: /home/ubuntu/EmojiModel/outputs/emoji_two_phase_h100_smoke3/p
+│         verbose: true                                                         
+│         auto_insert_metric_name: false                                        
+│         every_n_train_steps: 50                                               
+│       checkpoint_monitor:                                                     
+│         _target_: lightning.pytorch.callbacks.ModelCheckpoint                 
+│         monitor: val/nll                                                      
+│         mode: min                                                             
+│         save_top_k: 1                                                         
+│         save_last: false                                                      
+│         dirpath: /home/ubuntu/EmojiModel/outputs/emoji_two_phase_h100_smoke3/p
+│         filename: best                                                        
+│         auto_insert_metric_name: false                                        
+│         verbose: true                                                         
+│       learning_rate_monitor:                                                  
+│         _target_: lightning.pytorch.callbacks.LearningRateMonitor             
+│         logging_interval: step                                                
+│                                                                               
+├── data                                                                        
+│   └── train: emoji_reply                                                      
+│       valid: emoji_reply                                                      
+│       tokenizer_name_or_path: atomic_emoji                                    
+│       cache_dir: /tmp/emoji_mdlm_two_phase_smoke3                             
+│       data_file: /home/ubuntu/EmojiModel/outputs/emoji_two_phase_h100_smoke3/s
+│       emoji_vocab_sources:                                                    
+│       - text2emoji                                                            
+│       - common                                                                
+│       emoji_vocab_cache: /tmp/emoji_mdlm_two_phase_smoke3/atomic_emoji_vocab.j
+│       emoji_challenge_set_path: null                                          
+│       wrap: false                                                             
+│       streaming: false                                                        
+│                                                                               
+├── model                                                                       
+│   └── name: small                                                             
+│       type: ddit                                                              
+│       hidden_size: 768                                                        
+│       cond_dim: 128                                                           
+│       length: 64                                                              
+│       n_blocks: 12                                                            
+│       n_heads: 12                                                             
+│       scale_by_sigma: true                                                    
+│       dropout: 0.1                                                            
+│       tie_word_embeddings: false                                              
+│                                                                               
+├── strategy                                                                    
+│   └── _target_: lightning.pytorch.strategies.DDPStrategy                      
+│       find_unused_parameters: false                                           
+│                                                                               
+├── noise                                                                       
+│   └── type: loglinear                                                         
+│       sigma_min: 0.0001                                                       
+│       sigma_max: 20                                                           
+│                                                                               
+└── lr_scheduler                                                                
+    └── _target_: transformers.get_constant_schedule_with_warmup                
+        num_warmup_steps: 2500                                                  
+                                                                                

@@ -1,0 +1,116 @@
+{"model": "hard1_best", "canonical_id": "reply_00000_music", "topic": "music", "instruction": "Ok concert tonight", "prompt_emoji": "🎤🎶🌃", "target_emoji": "🎸🎧", "generated_emoji": "💃🎹🎶"}
+{"model": "hard1_best", "canonical_id": "reply_00000_music", "topic": "music", "instruction": "Ok concert tonight", "prompt_emoji": "🎶🌃🎤", "target_emoji": "🎸🎧", "generated_emoji": "🕺🎊🎈"}
+{"model": "hard1_best", "canonical_id": "reply_00000_music", "topic": "music", "instruction": "Ok concert tonight", "prompt_emoji": "🌃🎤🎶", "target_emoji": "🎸🎧", "generated_emoji": "🎷🎤🎺"}
+{"model": "hard1_best", "canonical_id": "reply_00001_study", "topic": "study", "instruction": "Need to ace this exam", "prompt_emoji": "📚💯", "target_emoji": "⏰😩📚", "generated_emoji": "💻🖊️✏️"}
+{"model": "hard1_best", "canonical_id": "reply_00001_study", "topic": "study", "instruction": "Need to ace this exam", "prompt_emoji": "💯📚", "target_emoji": "⏰😩📚", "generated_emoji": "📝😩📖"}
+{"model": "hard1_best", "canonical_id": "reply_00002_coffee", "topic": "coffee", "instruction": "Honestly decaf for me tonight", "prompt_emoji": "☕🚫🌙", "target_emoji": "😌🫖☕", "generated_emoji": "🌅🥱💛"}
+{"model": "hard1_best", "canonical_id": "reply_00002_coffee", "topic": "coffee", "instruction": "Honestly decaf for me tonight", "prompt_emoji": "☕🌙🚫", "target_emoji": "😌🫖☕", "generated_emoji": "😋🧋☕"}
+{"model": "hard1_best", "canonical_id": "reply_00002_coffee", "topic": "coffee", "instruction": "Honestly decaf for me tonight", "prompt_emoji": "🚫☕🌙", "target_emoji": "😌🫖☕", "generated_emoji": "🫖☕😌"}
+{"model": "hard1_best", "canonical_id": "reply_00005_party", "topic": "party", "instruction": "Celebrate good times", "prompt_emoji": "🎉🥳", "target_emoji": "✨🥳🪩🔊🎊", "generated_emoji": "🎉✨🥳"}
+{"model": "hard1_best", "canonical_id": "reply_00005_party", "topic": "party", "instruction": "Celebrate good times", "prompt_emoji": "🥳🎉", "target_emoji": "✨🥳🪩🔊🎊", "generated_emoji": "🪩🙌🎈"}
+{"model": "hard1_best", "canonical_id": "reply_00006_music", "topic": "music", "instruction": "Guys headphones on world off", "prompt_emoji": "🎧🌍🚫", "target_emoji": "🎹🎺🎸", "generated_emoji": "🌛🎶🕺"}
+{"model": "hard1_best", "canonical_id": "reply_00006_music", "topic": "music", "instruction": "Guys headphones on world off", "prompt_emoji": "🚫🎧🌍", "target_emoji": "🎹🎺🎸", "generated_emoji": "🎹🎤🎵"}
+{"model": "hard1_best", "canonical_id": "reply_00006_music", "topic": "music", "instruction": "Guys headphones on world off", "prompt_emoji": "🌍🚫🎧", "target_emoji": "🎹🎺🎸", "generated_emoji": "🎹🎧🎧"}
+{"model": "hard1_best", "canonical_id": "reply_00007_weather_cold", "topic": "weather_cold", "instruction": "Ok brr it's chilly", "prompt_emoji": "🥶❄️", "target_emoji": "🧣⛷️🧥🏂", "generated_emoji": ""}
+{"model": "hard1_best", "canonical_id": "reply_00007_weather_cold", "topic": "weather_cold", "instruction": "Ok brr it's chilly", "prompt_emoji": "❄️🥶", "target_emoji": "🧣⛷️🧥🏂", "generated_emoji": "🧤🍫🧤"}
+{"model": "hard1_best", "canonical_id": "reply_00008_tech", "topic": "tech", "instruction": "Ugh robots are the future", "prompt_emoji": "🤖🔮", "target_emoji": "📱🕹️👾", "generated_emoji": "🤖🕹️🚀"}
+{"model": "hard1_best", "canonical_id": "reply_00008_tech", "topic": "tech", "instruction": "Ugh robots are the future", "prompt_emoji": "🔮🤖", "target_emoji": "📱🕹️👾", "generated_emoji": "⌨️👾💻"}
+{"model": "hard1_best", "canonical_id": "reply_00009_weather_cold", "topic": "weather_cold", "instruction": "Hey skiing this weekend", "prompt_emoji": "⛷️❄️", "target_emoji": "☃️⛷️", "generated_emoji": "⛄🏂🧣"}
+{"model": "hard1_best", "canonical_id": "reply_00009_weather_cold", "topic": "weather_cold", "instruction": "Hey skiing this weekend", "prompt_emoji": "❄️⛷️", "target_emoji": "☃️⛷️", "generated_emoji": "⛷️☃️🏂"}
+{"model": "hard1_best", "canonical_id": "reply_00010_love", "topic": "love", "instruction": "Wow will you be my valentine", "prompt_emoji": "💘🌹", "target_emoji": "💞💘💖💕🥰", "generated_emoji": "🌹😍❤️"}
+{"model": "hard1_best", "canonical_id": "reply_00010_love", "topic": "love", "instruction": "Wow will you be my valentine", "prompt_emoji": "🌹💘", "target_emoji": "💞💘💖💕🥰", "generated_emoji": "😍💘❤️"}
+{"model": "hard1_best", "canonical_id": "reply_00012_rain", "topic": "rain", "instruction": "It's raining heavily", "prompt_emoji": "🌧️☔", "target_emoji": "☁️⛈️🫧", "generated_emoji": "🌦️🫧💧"}
+{"model": "hard1_best", "canonical_id": "reply_00012_rain", "topic": "rain", "instruction": "It's raining heavily", "prompt_emoji": "☔🌧️", "target_emoji": "☁️⛈️🫧", "generated_emoji": "⚡🔥⛈️"}
+{"model": "hard1_best", "canonical_id": "reply_00013_rain", "topic": "rain", "instruction": "Omg rainy day vibes", "prompt_emoji": "🌧️😌", "target_emoji": "🌧️⛈️", "generated_emoji": "🌦️⛈️🫧"}
+{"model": "hard1_best", "canonical_id": "reply_00013_rain", "topic": "rain", "instruction": "Omg rainy day vibes", "prompt_emoji": "😌🌧️", "target_emoji": "🌧️⛈️", "generated_emoji": "🏠🫧⛈️"}
+{"model": "hard1_best", "canonical_id": "reply_00014_nature", "topic": "nature", "instruction": "Ok rainbow after the rain", "prompt_emoji": "🌈🌦️", "target_emoji": "🌅⛰️", "generated_emoji": "🏞️🍃🌲"}
+{"model": "hard1_best", "canonical_id": "reply_00014_nature", "topic": "nature", "instruction": "Ok rainbow after the rain", "prompt_emoji": "🌦️🌈", "target_emoji": "🌅⛰️", "generated_emoji": "🏞️🌸🌈"}
+{"model": "hard1_best", "canonical_id": "reply_00015_sick", "topic": "sick", "instruction": "Doctor's appointment today", "prompt_emoji": "🩺🏥", "target_emoji": "🥴🛏️", "generated_emoji": "🤒😷🍵"}
+{"model": "hard1_best", "canonical_id": "reply_00015_sick", "topic": "sick", "instruction": "Doctor's appointment today", "prompt_emoji": "🏥🩺", "target_emoji": "🥴🛏️", "generated_emoji": "🛌🛏️🛏️"}
+{"model": "hard1_best", "canonical_id": "reply_00016_weather_sun", "topic": "weather_sun", "instruction": "Honestly picnic in the park", "prompt_emoji": "🧺🌳☀️", "target_emoji": "🍹🌅🌊🌴🩴", "generated_emoji": "🌅🍹☀️"}
+{"model": "hard1_best", "canonical_id": "reply_00016_weather_sun", "topic": "weather_sun", "instruction": "Honestly picnic in the park", "prompt_emoji": "🌳🧺☀️", "target_emoji": "🍹🌅🌊🌴🩴", "generated_emoji": "🌻🌞🌊"}
+{"model": "hard1_best", "canonical_id": "reply_00016_weather_sun", "topic": "weather_sun", "instruction": "Honestly picnic in the park", "prompt_emoji": "☀️🧺🌳", "target_emoji": "🍹🌅🌊🌴🩴", "generated_emoji": "🍹🕶️🏝️"}
+{"model": "hard1_best", "canonical_id": "reply_00017_celebration", "topic": "celebration", "instruction": "Omg let's party tonight", "prompt_emoji": "🎉🥳🌃", "target_emoji": "🍾🤩✨", "generated_emoji": "🍾🎊🍾"}
+{"model": "hard1_best", "canonical_id": "reply_00017_celebration", "topic": "celebration", "instruction": "Omg let's party tonight", "prompt_emoji": "🌃🥳🎉", "target_emoji": "🍾🤩✨", "generated_emoji": "🙌🍾🏆"}
+{"model": "hard1_best", "canonical_id": "reply_00017_celebration", "topic": "celebration", "instruction": "Omg let's party tonight", "prompt_emoji": "🥳🌃🎉", "target_emoji": "🍾🤩✨", "generated_emoji": "🎊🍾✨"}
+{"model": "hard1_best", "canonical_id": "reply_00018_nature", "topic": "nature", "instruction": "Wow fresh mountain air", "prompt_emoji": "🏔️🌲😮‍💨", "target_emoji": "🌿🌅⛰️", "generated_emoji": "🌲🦋🦋"}
+{"model": "hard1_best", "canonical_id": "reply_00018_nature", "topic": "nature", "instruction": "Wow fresh mountain air", "prompt_emoji": "🌲🏔️😮‍💨", "target_emoji": "🌿🌅⛰️", "generated_emoji": "🏞️🌲🦋"}
+{"model": "hard1_best", "canonical_id": "reply_00018_nature", "topic": "nature", "instruction": "Wow fresh mountain air", "prompt_emoji": "😮‍💨🌲🏔️", "target_emoji": "🌿🌅⛰️", "generated_emoji": "🌲🏞️🍂"}
+{"model": "hard1_best", "canonical_id": "reply_00019_sleep", "topic": "sleep", "instruction": "Early night tonight", "prompt_emoji": "🌙😴", "target_emoji": "🥴😴🥱", "generated_emoji": "😴⭐🦉"}
+{"model": "hard1_best", "canonical_id": "reply_00019_sleep", "topic": "sleep", "instruction": "Early night tonight", "prompt_emoji": "😴🌙", "target_emoji": "🥴😴🥱", "generated_emoji": "😴🕯️🌌"}
+{"model": "hard1_best", "canonical_id": "reply_00020_sleep", "topic": "sleep", "instruction": "Time for bed", "prompt_emoji": "🛏️😴", "target_emoji": "⭐😴🛌", "generated_emoji": "🥱🛌🛌"}
+{"model": "hard1_best", "canonical_id": "reply_00020_sleep", "topic": "sleep", "instruction": "Time for bed", "prompt_emoji": "😴🛏️", "target_emoji": "⭐😴🛌", "generated_emoji": "🛌🌜🛌"}
+{"model": "hard1_best", "canonical_id": "reply_00021_party", "topic": "party", "instruction": "Guys music's loud let's go", "prompt_emoji": "🎶🔊🥳", "target_emoji": "🕺🔊🥳🎶", "generated_emoji": "🎉🥳🥳"}
+{"model": "hard1_best", "canonical_id": "reply_00021_party", "topic": "party", "instruction": "Guys music's loud let's go", "prompt_emoji": "🥳🎶🔊", "target_emoji": "🕺🔊🥳🎶", "generated_emoji": "💃🕺💃"}
+{"model": "hard1_best", "canonical_id": "reply_00021_party", "topic": "party", "instruction": "Guys music's loud let's go", "prompt_emoji": "🔊🎶🥳", "target_emoji": "🕺🔊🥳🎶", "generated_emoji": "🎶🎵🎶"}
+{"model": "hard1_best", "canonical_id": "reply_00022_coffee", "topic": "coffee", "instruction": "One more cup", "prompt_emoji": "☕➕", "target_emoji": "🍵🌞🧋💛", "generated_emoji": "📖📖✨"}
+{"model": "hard1_best", "canonical_id": "reply_00022_coffee", "topic": "coffee", "instruction": "One more cup", "prompt_emoji": "➕☕", "target_emoji": "🍵🌞🧋💛", "generated_emoji": "🌅☕🌅"}
+{"model": "hard1_best", "canonical_id": "reply_00023_study", "topic": "study", "instruction": "Ugh reading for class", "prompt_emoji": "📖🎓", "target_emoji": "✏️🧠☕📚🤓", "generated_emoji": "📝🧠🤓"}
+{"model": "hard1_best", "canonical_id": "reply_00023_study", "topic": "study", "instruction": "Ugh reading for class", "prompt_emoji": "🎓📖", "target_emoji": "✏️🧠☕📚🤓", "generated_emoji": "✏️✏️📚"}
+{"model": "hard1_best", "canonical_id": "reply_00024_coffee", "topic": "coffee", "instruction": "Guys cozy cafe morning", "prompt_emoji": "☕🌅☺️", "target_emoji": "🧋🌞💛🍵", "generated_emoji": "💛🫖🥱"}
+{"model": "hard1_best", "canonical_id": "reply_00024_coffee", "topic": "coffee", "instruction": "Guys cozy cafe morning", "prompt_emoji": "☕☺️🌅", "target_emoji": "🧋🌞💛🍵", "generated_emoji": "✨🧋😋"}
+{"model": "hard1_best", "canonical_id": "reply_00024_coffee", "topic": "coffee", "instruction": "Guys cozy cafe morning", "prompt_emoji": "☺️🌅☕", "target_emoji": "🧋🌞💛🍵", "generated_emoji": "💛🌞☕"}
+{"model": "hard1_best", "canonical_id": "reply_00025_tech", "topic": "tech", "instruction": "The app finally works", "prompt_emoji": "📱✅🎉", "target_emoji": "✨💻⌨️🚀", "generated_emoji": "🕹️💻✨"}
+{"model": "hard1_best", "canonical_id": "reply_00025_tech", "topic": "tech", "instruction": "The app finally works", "prompt_emoji": "✅📱🎉", "target_emoji": "✨💻⌨️🚀", "generated_emoji": "✨📱✨"}
+{"model": "hard1_best", "canonical_id": "reply_00025_tech", "topic": "tech", "instruction": "The app finally works", "prompt_emoji": "✅🎉📱", "target_emoji": "✨💻⌨️🚀", "generated_emoji": "🚀✨⏳"}
+{"model": "hard1_best", "canonical_id": "reply_00026_coffee", "topic": "coffee", "instruction": "Omg rise and grind", "prompt_emoji": "☀️☕💪", "target_emoji": "☕😋😌✨🫖", "generated_emoji": "☕💛💛"}
+{"model": "hard1_best", "canonical_id": "reply_00026_coffee", "topic": "coffee", "instruction": "Omg rise and grind", "prompt_emoji": "💪☀️☕", "target_emoji": "☕😋😌✨🫖", "generated_emoji": "😋🌞🍵"}
+{"model": "hard1_best", "canonical_id": "reply_00026_coffee", "topic": "coffee", "instruction": "Omg rise and grind", "prompt_emoji": "☀️💪☕", "target_emoji": "☕😋😌✨🫖", "generated_emoji": "🌅🌞🙂"}
+{"model": "hard1_last", "canonical_id": "reply_00000_music", "topic": "music", "instruction": "Ok concert tonight", "prompt_emoji": "🎤🎶🌃", "target_emoji": "🎸🎧", "generated_emoji": "💃🎺🎷"}
+{"model": "hard1_last", "canonical_id": "reply_00000_music", "topic": "music", "instruction": "Ok concert tonight", "prompt_emoji": "🎶🌃🎤", "target_emoji": "🎸🎧", "generated_emoji": "💃🎺🎷"}
+{"model": "hard1_last", "canonical_id": "reply_00000_music", "topic": "music", "instruction": "Ok concert tonight", "prompt_emoji": "🌃🎤🎶", "target_emoji": "🎸🎧", "generated_emoji": "💃🎺🎷"}
+{"model": "hard1_last", "canonical_id": "reply_00001_study", "topic": "study", "instruction": "Need to ace this exam", "prompt_emoji": "📚💯", "target_emoji": "⏰😩📚", "generated_emoji": "🖊️🤓✏️"}
+{"model": "hard1_last", "canonical_id": "reply_00001_study", "topic": "study", "instruction": "Need to ace this exam", "prompt_emoji": "💯📚", "target_emoji": "⏰😩📚", "generated_emoji": "🖊️🤓✏️"}
+{"model": "hard1_last", "canonical_id": "reply_00002_coffee", "topic": "coffee", "instruction": "Honestly decaf for me tonight", "prompt_emoji": "☕🚫🌙", "target_emoji": "😌🫖☕", "generated_emoji": "😌🥱☕"}
+{"model": "hard1_last", "canonical_id": "reply_00002_coffee", "topic": "coffee", "instruction": "Honestly decaf for me tonight", "prompt_emoji": "☕🌙🚫", "target_emoji": "😌🫖☕", "generated_emoji": "😌🫖☕"}
+{"model": "hard1_last", "canonical_id": "reply_00002_coffee", "topic": "coffee", "instruction": "Honestly decaf for me tonight", "prompt_emoji": "🚫☕🌙", "target_emoji": "😌🫖☕", "generated_emoji": "☕🥱✨"}
+{"model": "hard1_last", "canonical_id": "reply_00005_party", "topic": "party", "instruction": "Celebrate good times", "prompt_emoji": "🎉🥳", "target_emoji": "✨🥳🪩🔊🎊", "generated_emoji": "🎈🎶🥳"}
+{"model": "hard1_last", "canonical_id": "reply_00005_party", "topic": "party", "instruction": "Celebrate good times", "prompt_emoji": "🥳🎉", "target_emoji": "✨🥳🪩🔊🎊", "generated_emoji": "🕺✨🥳"}
+{"model": "hard1_last", "canonical_id": "reply_00006_music", "topic": "music", "instruction": "Guys headphones on world off", "prompt_emoji": "🎧🌍🚫", "target_emoji": "🎹🎺🎸", "generated_emoji": "🎹🎵🎧"}
+{"model": "hard1_last", "canonical_id": "reply_00006_music", "topic": "music", "instruction": "Guys headphones on world off", "prompt_emoji": "🚫🎧🌍", "target_emoji": "🎹🎺🎸", "generated_emoji": "🎹🎺🎸"}
+{"model": "hard1_last", "canonical_id": "reply_00006_music", "topic": "music", "instruction": "Guys headphones on world off", "prompt_emoji": "🌍🚫🎧", "target_emoji": "🎹🎺🎸", "generated_emoji": "🎹🎸🎧"}
+{"model": "hard1_last", "canonical_id": "reply_00007_weather_cold", "topic": "weather_cold", "instruction": "Ok brr it's chilly", "prompt_emoji": "🥶❄️", "target_emoji": "🧣⛷️🧥🏂", "generated_emoji": "🌨️☃️🔥"}
+{"model": "hard1_last", "canonical_id": "reply_00007_weather_cold", "topic": "weather_cold", "instruction": "Ok brr it's chilly", "prompt_emoji": "❄️🥶", "target_emoji": "🧣⛷️🧥🏂", "generated_emoji": "⛄🌨️🔥"}
+{"model": "hard1_last", "canonical_id": "reply_00008_tech", "topic": "tech", "instruction": "Ugh robots are the future", "prompt_emoji": "🤖🔮", "target_emoji": "📱🕹️👾", "generated_emoji": "👾✨🚀"}
+{"model": "hard1_last", "canonical_id": "reply_00008_tech", "topic": "tech", "instruction": "Ugh robots are the future", "prompt_emoji": "🔮🤖", "target_emoji": "📱🕹️👾", "generated_emoji": "👾✨🚀"}
+{"model": "hard1_last", "canonical_id": "reply_00009_weather_cold", "topic": "weather_cold", "instruction": "Hey skiing this weekend", "prompt_emoji": "⛷️❄️", "target_emoji": "☃️⛷️", "generated_emoji": "🌨️🏂🏂"}
+{"model": "hard1_last", "canonical_id": "reply_00009_weather_cold", "topic": "weather_cold", "instruction": "Hey skiing this weekend", "prompt_emoji": "❄️⛷️", "target_emoji": "☃️⛷️", "generated_emoji": "☃️🧥⛷️"}
+{"model": "hard1_last", "canonical_id": "reply_00010_love", "topic": "love", "instruction": "Wow will you be my valentine", "prompt_emoji": "💘🌹", "target_emoji": "💞💘💖💕🥰", "generated_emoji": "💕🌹💝"}
+{"model": "hard1_last", "canonical_id": "reply_00010_love", "topic": "love", "instruction": "Wow will you be my valentine", "prompt_emoji": "🌹💘", "target_emoji": "💞💘💖💕🥰", "generated_emoji": "💘😘😍"}
+{"model": "hard1_last", "canonical_id": "reply_00012_rain", "topic": "rain", "instruction": "It's raining heavily", "prompt_emoji": "🌧️☔", "target_emoji": "☁️⛈️🫧", "generated_emoji": "☁️⛈️🫧"}
+{"model": "hard1_last", "canonical_id": "reply_00012_rain", "topic": "rain", "instruction": "It's raining heavily", "prompt_emoji": "☔🌧️", "target_emoji": "☁️⛈️🫧", "generated_emoji": "🏠🌦️☔"}
+{"model": "hard1_last", "canonical_id": "reply_00013_rain", "topic": "rain", "instruction": "Omg rainy day vibes", "prompt_emoji": "🌧️😌", "target_emoji": "🌧️⛈️", "generated_emoji": "🌦️☁️☔"}
+{"model": "hard1_last", "canonical_id": "reply_00013_rain", "topic": "rain", "instruction": "Omg rainy day vibes", "prompt_emoji": "😌🌧️", "target_emoji": "🌧️⛈️", "generated_emoji": "🌦️☁️☔"}
+{"model": "hard1_last", "canonical_id": "reply_00014_nature", "topic": "nature", "instruction": "Ok rainbow after the rain", "prompt_emoji": "🌈🌦️", "target_emoji": "🌅⛰️", "generated_emoji": "🏞️🌲🌸"}
+{"model": "hard1_last", "canonical_id": "reply_00014_nature", "topic": "nature", "instruction": "Ok rainbow after the rain", "prompt_emoji": "🌦️🌈", "target_emoji": "🌅⛰️", "generated_emoji": "🏞️🌲🌸"}
+{"model": "hard1_last", "canonical_id": "reply_00015_sick", "topic": "sick", "instruction": "Doctor's appointment today", "prompt_emoji": "🩺🏥", "target_emoji": "🥴🛏️", "generated_emoji": "🌡️🥴🍵"}
+{"model": "hard1_last", "canonical_id": "reply_00015_sick", "topic": "sick", "instruction": "Doctor's appointment today", "prompt_emoji": "🏥🩺", "target_emoji": "🥴🛏️", "generated_emoji": "🌡️🥴🍵"}
+{"model": "hard1_last", "canonical_id": "reply_00016_weather_sun", "topic": "weather_sun", "instruction": "Honestly picnic in the park", "prompt_emoji": "🧺🌳☀️", "target_emoji": "🍹🌅🌊🌴🩴", "generated_emoji": "🌻🌊☀️"}
+{"model": "hard1_last", "canonical_id": "reply_00016_weather_sun", "topic": "weather_sun", "instruction": "Honestly picnic in the park", "prompt_emoji": "🌳🧺☀️", "target_emoji": "🍹🌅🌊🌴🩴", "generated_emoji": "🌻🌊☀️"}
+{"model": "hard1_last", "canonical_id": "reply_00016_weather_sun", "topic": "weather_sun", "instruction": "Honestly picnic in the park", "prompt_emoji": "☀️🧺🌳", "target_emoji": "🍹🌅🌊🌴🩴", "generated_emoji": "😎🌞🌊"}
+{"model": "hard1_last", "canonical_id": "reply_00017_celebration", "topic": "celebration", "instruction": "Omg let's party tonight", "prompt_emoji": "🎉🥳🌃", "target_emoji": "🍾🤩✨", "generated_emoji": "🍾🏆🥳"}
+{"model": "hard1_last", "canonical_id": "reply_00017_celebration", "topic": "celebration", "instruction": "Omg let's party tonight", "prompt_emoji": "🌃🥳🎉", "target_emoji": "🍾🤩✨", "generated_emoji": "🍾🤩✨"}
+{"model": "hard1_last", "canonical_id": "reply_00017_celebration", "topic": "celebration", "instruction": "Omg let's party tonight", "prompt_emoji": "🥳🌃🎉", "target_emoji": "🍾🤩✨", "generated_emoji": "🍾🏆🎈"}
+{"model": "hard1_last", "canonical_id": "reply_00018_nature", "topic": "nature", "instruction": "Wow fresh mountain air", "prompt_emoji": "🏔️🌲😮‍💨", "target_emoji": "🌿🌅⛰️", "generated_emoji": "🏞️🌅⛰️"}
+{"model": "hard1_last", "canonical_id": "reply_00018_nature", "topic": "nature", "instruction": "Wow fresh mountain air", "prompt_emoji": "🌲🏔️😮‍💨", "target_emoji": "🌿🌅⛰️", "generated_emoji": "🌿🌅⛰️"}
+{"model": "hard1_last", "canonical_id": "reply_00018_nature", "topic": "nature", "instruction": "Wow fresh mountain air", "prompt_emoji": "😮‍💨🌲🏔️", "target_emoji": "🌿🌅⛰️", "generated_emoji": "🌿🌅⛰️"}
+{"model": "hard1_last", "canonical_id": "reply_00019_sleep", "topic": "sleep", "instruction": "Early night tonight", "prompt_emoji": "🌙😴", "target_emoji": "🥴😴🥱", "generated_emoji": "🥴😴🥱"}
+{"model": "hard1_last", "canonical_id": "reply_00019_sleep", "topic": "sleep", "instruction": "Early night tonight", "prompt_emoji": "😴🌙", "target_emoji": "🥴😴🥱", "generated_emoji": "🌜🛌🦉"}
+{"model": "hard1_last", "canonical_id": "reply_00020_sleep", "topic": "sleep", "instruction": "Time for bed", "prompt_emoji": "🛏️😴", "target_emoji": "⭐😴🛌", "generated_emoji": "🌌🛌🌙"}
+{"model": "hard1_last", "canonical_id": "reply_00020_sleep", "topic": "sleep", "instruction": "Time for bed", "prompt_emoji": "😴🛏️", "target_emoji": "⭐😴🛌", "generated_emoji": "🛏️😪🦉"}
+{"model": "hard1_last", "canonical_id": "reply_00021_party", "topic": "party", "instruction": "Guys music's loud let's go", "prompt_emoji": "🎶🔊🥳", "target_emoji": "🕺🔊🥳🎶", "generated_emoji": "🎶💃🎉"}
+{"model": "hard1_last", "canonical_id": "reply_00021_party", "topic": "party", "instruction": "Guys music's loud let's go", "prompt_emoji": "🥳🎶🔊", "target_emoji": "🕺🔊🥳🎶", "generated_emoji": "✨🎶🎉"}
+{"model": "hard1_last", "canonical_id": "reply_00021_party", "topic": "party", "instruction": "Guys music's loud let's go", "prompt_emoji": "🔊🎶🥳", "target_emoji": "🕺🔊🥳🎶", "generated_emoji": "🎶💃🎉"}
+{"model": "hard1_last", "canonical_id": "reply_00022_coffee", "topic": "coffee", "instruction": "One more cup", "prompt_emoji": "☕➕", "target_emoji": "🍵🌞🧋💛", "generated_emoji": "😋🌅✨"}
+{"model": "hard1_last", "canonical_id": "reply_00022_coffee", "topic": "coffee", "instruction": "One more cup", "prompt_emoji": "➕☕", "target_emoji": "🍵🌞🧋💛", "generated_emoji": "😋🌅✨"}
+{"model": "hard1_last", "canonical_id": "reply_00023_study", "topic": "study", "instruction": "Ugh reading for class", "prompt_emoji": "📖🎓", "target_emoji": "✏️🧠☕📚🤓", "generated_emoji": "✏️📚📖"}
+{"model": "hard1_last", "canonical_id": "reply_00023_study", "topic": "study", "instruction": "Ugh reading for class", "prompt_emoji": "🎓📖", "target_emoji": "✏️🧠☕📚🤓", "generated_emoji": "⏰🖊️📖"}
+{"model": "hard1_last", "canonical_id": "reply_00024_coffee", "topic": "coffee", "instruction": "Guys cozy cafe morning", "prompt_emoji": "☕🌅☺️", "target_emoji": "🧋🌞💛🍵", "generated_emoji": "🧋🌞💛"}
+{"model": "hard1_last", "canonical_id": "reply_00024_coffee", "topic": "coffee", "instruction": "Guys cozy cafe morning", "prompt_emoji": "☕☺️🌅", "target_emoji": "🧋🌞💛🍵", "generated_emoji": "🧋🌞💛"}
+{"model": "hard1_last", "canonical_id": "reply_00024_coffee", "topic": "coffee", "instruction": "Guys cozy cafe morning", "prompt_emoji": "☺️🌅☕", "target_emoji": "🧋🌞💛🍵", "generated_emoji": "📖🍵😋"}
+{"model": "hard1_last", "canonical_id": "reply_00025_tech", "topic": "tech", "instruction": "The app finally works", "prompt_emoji": "📱✅🎉", "target_emoji": "✨💻⌨️🚀", "generated_emoji": "⌨️📱💻"}
+{"model": "hard1_last", "canonical_id": "reply_00025_tech", "topic": "tech", "instruction": "The app finally works", "prompt_emoji": "✅📱🎉", "target_emoji": "✨💻⌨️🚀", "generated_emoji": "👾⌨️✨"}
+{"model": "hard1_last", "canonical_id": "reply_00025_tech", "topic": "tech", "instruction": "The app finally works", "prompt_emoji": "✅🎉📱", "target_emoji": "✨💻⌨️🚀", "generated_emoji": "🛠️🕹️✨"}
+{"model": "hard1_last", "canonical_id": "reply_00026_coffee", "topic": "coffee", "instruction": "Omg rise and grind", "prompt_emoji": "☀️☕💪", "target_emoji": "☕😋😌✨🫖", "generated_emoji": "☕🌅💛"}
+{"model": "hard1_last", "canonical_id": "reply_00026_coffee", "topic": "coffee", "instruction": "Omg rise and grind", "prompt_emoji": "💪☀️☕", "target_emoji": "☕😋😌✨🫖", "generated_emoji": "📖🌞☕"}
+{"model": "hard1_last", "canonical_id": "reply_00026_coffee", "topic": "coffee", "instruction": "Omg rise and grind", "prompt_emoji": "☀️💪☕", "target_emoji": "☕😋😌✨🫖", "generated_emoji": "🥞🌞🌅"}

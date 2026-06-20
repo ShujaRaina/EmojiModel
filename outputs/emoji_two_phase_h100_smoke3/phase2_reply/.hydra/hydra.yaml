@@ -1,0 +1,191 @@
+hydra:
+  run:
+    dir: /home/ubuntu/EmojiModel/outputs/emoji_two_phase_h100_smoke3/phase2_reply
+  sweep:
+    dir: multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.num}
+  launcher:
+    _target_: hydra._internal.core_plugins.basic_launcher.BasicLauncher
+  sweeper:
+    _target_: hydra._internal.core_plugins.basic_sweeper.BasicSweeper
+    max_batch_size: null
+    params: null
+  help:
+    app_name: ${hydra.job.name}
+    header: '${hydra.help.app_name} is powered by Hydra.
+
+      '
+    footer: 'Powered by Hydra (https://hydra.cc)
+
+      Use --hydra-help to view Hydra specific help
+
+      '
+    template: '${hydra.help.header}
+
+      == Configuration groups ==
+
+      Compose your configuration from those groups (group=option)
+
+
+      $APP_CONFIG_GROUPS
+
+
+      == Config ==
+
+      Override anything in the config (foo.bar=value)
+
+
+      $CONFIG
+
+
+      ${hydra.help.footer}
+
+      '
+  hydra_help:
+    template: 'Hydra (${hydra.runtime.version})
+
+      See https://hydra.cc for more info.
+
+
+      == Flags ==
+
+      $FLAGS_HELP
+
+
+      == Configuration groups ==
+
+      Compose your configuration from those groups (For example, append hydra/job_logging=disabled
+      to command line)
+
+
+      $HYDRA_CONFIG_GROUPS
+
+
+      Use ''--cfg hydra'' to Show the Hydra config.
+
+      '
+    hydra_help: ???
+  hydra_logging:
+    version: 1
+    formatters:
+      simple:
+        format: '[%(asctime)s][HYDRA] %(message)s'
+    handlers:
+      console:
+        class: logging.StreamHandler
+        formatter: simple
+        stream: ext://sys.stdout
+    root:
+      level: INFO
+      handlers:
+      - console
+    loggers:
+      logging_example:
+        level: DEBUG
+    disable_existing_loggers: false
+  job_logging:
+    version: 1
+    formatters:
+      simple:
+        format: '[%(asctime)s][%(name)s][%(levelname)s] - %(message)s'
+    handlers:
+      console:
+        class: logging.StreamHandler
+        formatter: simple
+        stream: ext://sys.stdout
+      file:
+        class: logging.FileHandler
+        formatter: simple
+        filename: ${hydra.runtime.output_dir}/${hydra.job.name}.log
+    root:
+      level: INFO
+      handlers:
+      - console
+      - file
+    disable_existing_loggers: false
+  env: {}
+  mode: RUN
+  searchpath: []
+  callbacks: {}
+  output_subdir: .hydra
+  overrides:
+    hydra:
+    - hydra.run.dir=/home/ubuntu/EmojiModel/outputs/emoji_two_phase_h100_smoke3/phase2_reply
+    - hydra.mode=RUN
+    task:
+    - mode=train
+    - data=emoji_reply
+    - data.cache_dir=/tmp/emoji_mdlm_two_phase_smoke3
+    - data.emoji_vocab_cache=/tmp/emoji_mdlm_two_phase_smoke3/atomic_emoji_vocab.json
+    - data.emoji_vocab_sources=[text2emoji,common]
+    - model=small
+    - model.length=64
+    - parameterization=subs
+    - backbone=dit
+    - trainer.accelerator=cuda
+    - trainer.devices=1
+    - trainer.precision=bf16-mixed
+    - +trainer.check_val_every_n_epoch=null
+    - trainer.limit_val_batches=2
+    - trainer.num_sanity_val_steps=0
+    - trainer.log_every_n_steps=5
+    - loader.global_batch_size=128
+    - loader.batch_size=128
+    - loader.eval_batch_size=128
+    - loader.num_workers=8
+    - loader.pin_memory=true
+    - training.ema=0.9999
+    - eval.compute_generative_perplexity=false
+    - wandb.project=emoji-model
+    - trainer.max_steps=5
+    - trainer.val_check_interval=5
+    - wandb.name=emoji_phase2_reply_h100_smoke3
+    - wandb.id=emoji_phase2_reply_h100_smoke3
+    - checkpointing.resume_from_ckpt=false
+    - +checkpointing.init_from_ckpt_path=/home/ubuntu/EmojiModel/outputs/emoji_two_phase_h100_smoke3/phase1_semantic/checkpoints/last.ckpt
+    - callbacks.checkpoint_every_n_steps.every_n_train_steps=50
+  job:
+    name: main
+    chdir: true
+    override_dirname: +checkpointing.init_from_ckpt_path=/home/ubuntu/EmojiModel/outputs/emoji_two_phase_h100_smoke3/phase1_semantic/checkpoints/last.ckpt,+trainer.check_val_every_n_epoch=null,backbone=dit,callbacks.checkpoint_every_n_steps.every_n_train_steps=50,checkpointing.resume_from_ckpt=false,data.cache_dir=/tmp/emoji_mdlm_two_phase_smoke3,data.emoji_vocab_cache=/tmp/emoji_mdlm_two_phase_smoke3/atomic_emoji_vocab.json,data.emoji_vocab_sources=[text2emoji,common],data=emoji_reply,eval.compute_generative_perplexity=false,loader.batch_size=128,loader.eval_batch_size=128,loader.global_batch_size=128,loader.num_workers=8,loader.pin_memory=true,mode=train,model.length=64,model=small,parameterization=subs,trainer.accelerator=cuda,trainer.devices=1,trainer.limit_val_batches=2,trainer.log_every_n_steps=5,trainer.max_steps=5,trainer.num_sanity_val_steps=0,trainer.precision=bf16-mixed,trainer.val_check_interval=5,training.ema=0.9999,wandb.id=emoji_phase2_reply_h100_smoke3,wandb.name=emoji_phase2_reply_h100_smoke3,wandb.project=emoji-model
+    id: ???
+    num: ???
+    config_name: config
+    env_set: {}
+    env_copy: []
+    config:
+      override_dirname:
+        kv_sep: '='
+        item_sep: ','
+        exclude_keys: []
+  runtime:
+    version: 1.3.2
+    version_base: '1.3'
+    cwd: /home/ubuntu/EmojiModel
+    config_sources:
+    - path: hydra.conf
+      schema: pkg
+      provider: hydra
+    - path: /home/ubuntu/EmojiModel/configs
+      schema: file
+      provider: main
+    - path: ''
+      schema: structured
+      provider: schema
+    output_dir: /home/ubuntu/EmojiModel/outputs/emoji_two_phase_h100_smoke3/phase2_reply
+    choices:
+      lr_scheduler: constant_warmup
+      noise: loglinear
+      strategy: ddp
+      model: small
+      data: emoji_reply
+      hydra/env: default
+      hydra/callbacks: null
+      hydra/job_logging: default
+      hydra/hydra_logging: default
+      hydra/hydra_help: default
+      hydra/help: default
+      hydra/sweeper: basic
+      hydra/launcher: basic
+      hydra/output: default
+  verbose: false
