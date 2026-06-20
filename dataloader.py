@@ -428,6 +428,18 @@ def get_dataset(
     split = raw.train_test_split(test_size=0.01, seed=42)
     dataset = datasets.DatasetDict(
       {'train': split['train'], 'validation': split['test']})
+  elif dataset_name == 'emoji_reply':
+    # Local synthetic instruction-tuning set built by
+    # scripts/build_emoji_reply_dataset.py (instruction -> emoji reply).
+    repo_root = os.path.dirname(os.path.abspath(__file__))
+    data_file = os.path.join(
+      repo_root, 'data', 'emoji_reply', 'emoji_reply.jsonl')
+    raw = datasets.load_dataset(
+      'json', data_files=data_file, split='train', cache_dir=cache_dir)
+    raw = raw.rename_columns({'instruction': 'text', 'output': 'emoji'})
+    split = raw.train_test_split(test_size=0.05, seed=42)
+    dataset = datasets.DatasetDict(
+      {'train': split['train'], 'validation': split['test']})
   else:
     dataset = datasets.load_dataset(
       dataset_name,
@@ -464,7 +476,7 @@ def get_dataset(
   BOS = tokenizer.encode(tokenizer.bos_token)[0]
 
   def preprocess_and_tokenize(example):
-    if dataset_name == 'text2emoji':
+    if dataset_name in ('text2emoji', 'emoji_reply'):
       return _tokenize_text2emoji(
         example, tokenizer, block_size, EOS)
     if dataset_name == 'ptb':
@@ -522,6 +534,9 @@ def get_dataset(
   elif dataset_name == 'text2emoji':
     tokenized_dataset = tokenized_dataset.remove_columns(
       ['text', 'emoji', 'topic'])
+  elif dataset_name == 'emoji_reply':
+    tokenized_dataset = tokenized_dataset.remove_columns(
+      ['text', 'emoji', 'input', 'topic'])
   else:
     tokenized_dataset = tokenized_dataset.remove_columns(
       'text')

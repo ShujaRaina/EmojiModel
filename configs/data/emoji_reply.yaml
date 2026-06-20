@@ -1,0 +1,6 @@
+train: emoji_reply
+valid: emoji_reply
+tokenizer_name_or_path: gpt2
+cache_dir: ${oc.env:HOME}/mdlm_data
+wrap: False
+streaming: False

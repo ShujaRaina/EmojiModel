@@ -106,7 +106,9 @@ def main():
   print('\n=== Emoji generations ===')
   for text, ids, plen in zip(prompts, samples, prefix_lens):
     emoji_ids = extract_emoji(ids, plen, eot_id)
-    emoji = tokenizer.decode(emoji_ids).strip()
+    # Byte-level BPE can leave a dangling partial UTF-8 sequence at the cut
+    # point, which decodes to U+FFFD; drop those for a clean display.
+    emoji = tokenizer.decode(emoji_ids).replace('\ufffd', '').strip()
     print(f'{text!r:60s} -> {emoji}')
 
 
