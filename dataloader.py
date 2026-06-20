@@ -312,6 +312,7 @@ def _tokenize_text2emoji(example, tokenizer, block_size, eot,
   """
   input_ids_batch = []
   attention_batch = []
+  cond_batch = []
   for text, emoji in zip(example['text'], example['emoji']):
     text = text if text is not None else ''
     emoji = emoji if emoji is not None else ''
@@ -325,17 +326,26 @@ def _tokenize_text2emoji(example, tokenizer, block_size, eot,
       emoji_ids = emoji_ids[:block_size - 3]
       avail_text = 0
     text_ids = text_ids[:avail_text]
-    seq = [eot] + text_ids + [eot] + emoji_ids + [eot]
+    prefix = [eot] + text_ids + [eot]       # clamped conditioning context
+    seq = prefix + emoji_ids + [eot]
     seq = seq[:block_size]
+    # cond_mask=1 marks the conditioning prefix that is never noised and
+    # never contributes to the loss (the model conditions on it). The emoji
+    # span + its terminating `<eot>` (cond_mask=0) are what we diffuse.
+    cond = [1] * min(len(prefix), block_size)
+    cond = cond + [0] * (len(seq) - len(cond))
     attention = [1] * len(seq)
     if len(seq) < block_size:
       pad = block_size - len(seq)
       seq = seq + [eot] * pad
       attention = attention + [0] * pad
+      cond = cond + [0] * pad
     input_ids_batch.append(seq)
     attention_batch.append(attention)
+    cond_batch.append(cond)
   return {'input_ids': input_ids_batch,
-          'attention_mask': attention_batch}
+          'attention_mask': attention_batch,
+          'cond_mask': cond_batch}
 
 
 def get_dataset(

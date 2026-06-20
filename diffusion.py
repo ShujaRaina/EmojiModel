@@ -367,7 +367,9 @@ class Diffusion(L.LightningModule):
       attention_mask = batch['attention_mask']
     else:
       attention_mask = None
-    losses = self._loss(batch['input_ids'], attention_mask)
+    cond_mask = batch.get('cond_mask', None)
+    losses = self._loss(batch['input_ids'], attention_mask,
+                        cond_mask=cond_mask)
     loss = losses.loss
 
     if prefix == 'train':
@@ -577,16 +579,21 @@ class Diffusion(L.LightningModule):
         self.gen_ppl_metric.update(
           nlls, first_eos[..., 1:] + token_mask[..., 1:])
 
-  def q_xt(self, x, move_chance):
+  def q_xt(self, x, move_chance, cond_mask=None):
     """Computes the noisy sample xt.
 
     Args:
       x: int torch.Tensor with shape (batch_size,
           diffusion_model_input_length), input. 
       move_chance: float torch.Tensor with shape (batch_size, 1).
+      cond_mask: optional bool/int tensor, same shape as `x`. Positions
+        where `cond_mask == 1` are conditioning context and are never
+        masked (used for conditional generation, e.g. text -> emoji).
     """
     move_indices = torch.rand(
       * x.shape, device=x.device) < move_chance
+    if cond_mask is not None:
+      move_indices = move_indices & (cond_mask == 0)
     xt = torch.where(move_indices, self.mask_index, x)
     return xt
 
@@ -926,7 +933,7 @@ class Diffusion(L.LightningModule):
                           dim=-1,
                           index=x0[:, :, None]).squeeze(-1)
 
-  def _forward_pass_diffusion(self, x0):
+  def _forward_pass_diffusion(self, x0, cond_mask=None):
     t = self._sample_t(x0.shape[0], x0.device)
     if self.T > 0:
       t = (t * self.T).to(torch.int)
@@ -945,7 +952,7 @@ class Diffusion(L.LightningModule):
       unet_conditioning = sigma[:, None]
       move_chance = 1 - torch.exp(-sigma[:, None])
 
-    xt = self.q_xt(x0, move_chance)
+    xt = self.q_xt(x0, move_chance, cond_mask=cond_mask)
     model_output = self.forward(xt, unet_conditioning)
     utils.print_nans(model_output, 'model_output')
 
@@ -975,7 +982,7 @@ class Diffusion(L.LightningModule):
     return - log_p_theta * (
       dsigma / torch.expm1(sigma))[:, None]
 
-  def _loss(self, x0, attention_mask):
+  def _loss(self, x0, attention_mask, cond_mask=None):
     (input_tokens, output_tokens,
      attention_mask) = self._maybe_sub_sample(
        x0, attention_mask)
@@ -985,10 +992,18 @@ class Diffusion(L.LightningModule):
       loss = - logprobs.gather(
         -1, output_tokens[:, :, None])[:, :, 0]
     else:
-      loss = self._forward_pass_diffusion(input_tokens)
-    
-    nlls = loss * attention_mask
-    count = attention_mask.sum()
+      loss = self._forward_pass_diffusion(
+        input_tokens, cond_mask=cond_mask)
+
+    # For conditional generation the loss is only over generated (non-prefix,
+    # non-padding) positions: attention_mask drops padding, cond_mask drops
+    # the clamped conditioning prefix.
+    loss_mask = attention_mask
+    if cond_mask is not None:
+      loss_mask = attention_mask * (1 - cond_mask)
+    nlls = loss * loss_mask
+    count = loss_mask.sum()
+    attention_mask = loss_mask
 
     batch_nll = nlls.sum()
     token_nll = batch_nll / count
