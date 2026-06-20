@@ -411,6 +411,11 @@ def main():
   parser.add_argument('--seed', type=int, default=1)
   args = parser.parse_args()
 
+  random.seed(args.seed)
+  torch.manual_seed(args.seed)
+  if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(args.seed)
+
   args.challenge_file = os.path.abspath(args.challenge_file)
   args.reply_data_file = os.path.abspath(args.reply_data_file)
   if args.source == 'challenge':

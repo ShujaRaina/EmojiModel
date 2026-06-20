@@ -112,6 +112,9 @@ python -u -m main \
   data.permutation_augment_prob="${PERMUTATION_AUGMENT_PROB:-0.6}" \
   data.permutation_augment_prompt=true \
   data.permutation_augment_response=true \
+  data.emoji_infill_train_prob="${EMOJI_INFILL_TRAIN_PROB:-0.0}" \
+  data.emoji_infill_reveal_fraction="${EMOJI_INFILL_REVEAL_FRACTION:-0.5}" \
+  data.emoji_infill_reveal_pattern="${EMOJI_INFILL_REVEAL_PATTERN:-mixed}" \
   trainer.max_steps="${PHASE2_STEPS}" \
   trainer.val_check_interval="${PHASE2_VAL_INTERVAL:-50}" \
   wandb.name="emoji_phase2_reply_h100_${RUN_SUFFIX}" \

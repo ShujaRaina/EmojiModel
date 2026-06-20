@@ -1205,6 +1205,67 @@ def _shuffle_span(seq, start, end):
   seq[start:end] = seq[perm]
 
 
+def _choose_emoji_infill_reveals(length, reveal_fraction, pattern, device):
+  if length <= 1:
+    return []
+  reveal_count = int(round(length * reveal_fraction))
+  reveal_count = min(max(1, reveal_count), length - 1)
+  if pattern == 'mixed':
+    choices = ['prefix', 'suffix', 'scattered']
+    pattern = choices[int(torch.randint(len(choices), (), device=device).item())]
+  if pattern == 'prefix':
+    return list(range(reveal_count))
+  if pattern == 'suffix':
+    return list(range(length - reveal_count, length))
+  if pattern == 'scattered':
+    return torch.randperm(length, device=device)[:reveal_count].tolist()
+  raise ValueError(
+    'emoji_infill_reveal_pattern must be prefix, suffix, scattered, or mixed.')
+
+
+def _apply_emoji_infill_conditioning(batch, tokenizer, data_config):
+  prob = float(data_config.get('emoji_infill_train_prob', 0.0) or 0.0)
+  if prob <= 0:
+    return batch
+  if not isinstance(tokenizer, AtomicEmojiTokenizer):
+    return batch
+  input_ids = batch.get('input_ids', None)
+  cond_mask = batch.get('cond_mask', None)
+  attention_mask = batch.get('attention_mask', None)
+  if input_ids is None or cond_mask is None or attention_mask is None:
+    return batch
+
+  reveal_fraction = float(
+    data_config.get('emoji_infill_reveal_fraction', 0.5) or 0.5)
+  reveal_fraction = min(max(reveal_fraction, 0.0), 1.0)
+  pattern = data_config.get('emoji_infill_reveal_pattern', 'mixed')
+  sep_id = tokenizer.sep_token_id
+  eos_id = tokenizer.eos_token_id
+  pad_id = tokenizer.pad_token_id
+  for i in range(input_ids.shape[0]):
+    if torch.rand((), device=input_ids.device).item() >= prob:
+      continue
+    seq = input_ids[i]
+    sep_positions = (seq == sep_id).nonzero(as_tuple=False).flatten()
+    if not len(sep_positions):
+      continue
+    sep = int(sep_positions[0].item())
+    tail = seq[sep + 1:]
+    end_offsets = ((tail == eos_id) | (tail == pad_id)).nonzero(
+      as_tuple=False).flatten()
+    end = sep + 1 + int(end_offsets[0].item()) if len(end_offsets) else len(seq)
+    response_len = end - (sep + 1)
+    if response_len <= 1:
+      continue
+    reveal_offsets = _choose_emoji_infill_reveals(
+      response_len, reveal_fraction, pattern, input_ids.device)
+    for offset in reveal_offsets:
+      pos = sep + 1 + int(offset)
+      if attention_mask[i, pos]:
+        cond_mask[i, pos] = 1
+  return batch
+
+
 def _apply_emoji_permutation_augmentation(batch, tokenizer, data_config):
   prob = float(data_config.get('permutation_augment_prob', 0.0) or 0.0)
   if prob <= 0:
@@ -1247,8 +1308,9 @@ def _emoji_collate_fn(tokenizer, data_config, train):
 
   def collate(examples):
     batch = default_collate(examples)
-    return _apply_emoji_permutation_augmentation(
+    batch = _apply_emoji_permutation_augmentation(
       batch, tokenizer, data_config)
+    return _apply_emoji_infill_conditioning(batch, tokenizer, data_config)
   return collate
 
 

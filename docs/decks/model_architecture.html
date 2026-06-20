@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emoji MDLM Model Architecture</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --ink: #101828;
+  --muted: #475467;
+  --panel: #ffffff;
+  --accent: #2563eb;
+  --line: #d0d5dd;
+  --code: #111827;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.deck { width: 100vw; height: 100vh; overflow: hidden; }
+.slide {
+  display: none;
+  width: 100vw;
+  height: 100vh;
+  padding: 5.5vh 7vw;
+  background: var(--panel);
+}
+.slide.active { display: flex; flex-direction: column; justify-content: center; }
+h1 { font-size: clamp(2.4rem, 5vw, 5.2rem); line-height: 1.02; margin: 0 0 0.35em; letter-spacing: 0; }
+h2 { font-size: clamp(1.55rem, 2.7vw, 2.7rem); line-height: 1.12; margin: 0 0 0.75em; color: var(--muted); font-weight: 650; }
+h3 { font-size: clamp(1.2rem, 1.8vw, 1.8rem); margin: 0.8em 0 0.35em; }
+p, li { font-size: clamp(1.15rem, 1.65vw, 1.75rem); line-height: 1.45; }
+p { margin: 0.35em 0; }
+ul { margin: 0.35em 0 0.4em 1.2em; padding: 0; }
+li { margin: 0.2em 0; }
+code { background: #eef2ff; color: #1e3a8a; border-radius: 4px; padding: 0.08em 0.25em; }
+pre.code {
+  background: var(--code);
+  color: #f9fafb;
+  border-radius: 8px;
+  padding: 1.1rem 1.25rem;
+  overflow: auto;
+  max-height: 44vh;
+  font-size: clamp(0.9rem, 1.25vw, 1.25rem);
+  line-height: 1.35;
+}
+pre.code code { background: transparent; color: inherit; padding: 0; }
+table { border-collapse: collapse; margin-top: 0.8rem; font-size: clamp(0.86rem, 1.15vw, 1.2rem); width: min(100%, 1100px); }
+th, td { border-bottom: 1px solid var(--line); padding: 0.55rem 0.7rem; text-align: left; vertical-align: top; }
+th { color: var(--muted); font-weight: 700; }
+.controls {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 12px;
+  box-shadow: 0 8px 28px rgba(16, 24, 40, 0.12);
+}
+button {
+  border: 0;
+  background: var(--accent);
+  color: white;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.counter { color: var(--muted); font-size: 0.95rem; min-width: 72px; text-align: center; }
+@media print {
+  .deck { height: auto; overflow: visible; }
+  .slide { display: flex !important; page-break-after: always; height: 100vh; }
+  .controls { display: none; }
+}
+</style>
+</head>
+<body>
+<main class="deck">
+<section class="slide" id="slide-1">
+<h1>Emoji MDLM</h1>
+<h2>Model Architecture</h2>
+<p>Specialized masked diffusion for emoji-only semantic replies</p>
+</section>
+<section class="slide" id="slide-2">
+<h1>One-Slide Summary</h1>
+<ul><li>We adapted MDLM from text to an atomic emoji vocabulary.</li><li>The model is a Transformer denoiser inside a discrete masked diffusion process.</li><li>Inputs are emoji-only sequences: <code>[BOS] prompt [SEP] response [EOS]</code>.</li><li>Generation repeatedly denoises masked response tokens conditioned on the prompt.</li><li>Training is two phase: semantic scaffold first, reply behavior second.</li></ul>
+</section>
+<section class="slide" id="slide-3">
+<h1>Problem Shape</h1>
+<p>Emoji replies are short, semantic, and order-light.</p>
+<p>Example:</p>
+<pre class="code language-text"><code>Prompt bag: 🎤 🎶 🌃
+Target response: 🎸 🎧</code></pre>
+<p>The goal is not only next-token prediction. The useful behavior is:</p>
+<ul><li>preserve emoji grapheme identity</li><li>respond semantically</li><li>stay stable under prompt permutation</li><li>produce concise emoji-only output</li></ul>
+</section>
+<section class="slide" id="slide-4">
+<h1>Architecture Stack</h1>
+<pre class="code language-mermaid"><code>flowchart TD
+  A[Raw emoji reply rows] --&gt; B[Atomic emoji tokenizer]
+  B --&gt; C[Fixed length token sequence]
+  C --&gt; D[Masked discrete diffusion]
+  D --&gt; E[DiT / DDiT denoiser]
+  E --&gt; F[Reverse denoising sampler]
+  F --&gt; G[Emoji response]</code></pre>
+</section>
+<section class="slide" id="slide-5">
+<h1>Atomic Emoji Tokenizer</h1>
+<p>Instead of byte, BPE, or Unicode-codepoint tokenization:</p>
+<ul><li>each emoji grapheme cluster is one token</li><li>ZWJ sequences stay intact</li><li>skin tones and variation selectors stay attached</li><li>non-emoji text is filtered out for model inputs</li></ul>
+<p>This makes the modeling unit match the product unit.</p>
+</section>
+<section class="slide" id="slide-6">
+<h1>Sequence Format</h1>
+<p>Phase 1 semantic scaffold:</p>
+<pre class="code language-text"><code>[BOS] emoji_expr [EOS] [PAD]...</code></pre>
+<p>Phase 2 reply data:</p>
+<pre class="code language-text"><code>[BOS] prompt_emoji [SEP] response_emoji [EOS] [PAD]...</code></pre>
+<p>The prompt prefix is marked with <code>cond_mask=1</code>; the response side is the generation target.</p>
+</section>
+<section class="slide" id="slide-7">
+<h1>Concrete Demo Model</h1>
+<p>Current strongest demo checkpoint:</p>
+<pre class="code language-text"><code>model: medium
+params: 328M
+length: 64
+hidden_size: 1024
+blocks: 24
+heads: 16
+dropout: 0.1
+backbone: DiT/DDiT
+parameterization: SUBS</code></pre>
+<p>Checkpoint:</p>
+<pre class="code language-text"><code>outputs/emoji_two_phase_h100_hard1/phase2_reply/checkpoints/last.ckpt</code></pre>
+</section>
+<section class="slide" id="slide-8">
+<h1>Denoiser: DDiT Block</h1>
+<p>Each block is a Transformer block with adaptive LayerNorm modulation.</p>
+<pre class="code language-mermaid"><code>flowchart TD
+  X[token embeddings] --&gt; LN1[LayerNorm]
+  C[diffusion condition] --&gt; ADA[adaLN modulation]
+  ADA --&gt; MSA_MOD[shift scale gate]
+  LN1 --&gt; MSA_MOD --&gt; ATTN[RoPE self-attention]
+  ATTN --&gt; R1[residual gated add]
+  R1 --&gt; LN2[LayerNorm]
+  ADA --&gt; MLP_MOD[shift scale gate]
+  LN2 --&gt; MLP_MOD --&gt; MLP[MLP]
+  MLP --&gt; R2[residual gated add]</code></pre>
+<p>Key detail: attention is non-causal. Diffusion denoising can use bidirectional context over the current partially masked sequence.</p>
+</section>
+<section class="slide" id="slide-9">
+<h1>Position and Attention</h1>
+<p>The denoiser uses:</p>
+<ul><li>learned token embeddings</li><li>rotary positional embeddings</li><li>multi-head self-attention</li><li>MLP expansion ratio of 4</li><li>FlashAttention when available</li><li>PyTorch scaled dot-product attention fallback</li></ul>
+<p>This is a bidirectional denoiser, not an autoregressive decoder.</p>
+</section>
+<section class="slide" id="slide-10">
+<h1>Diffusion Process</h1>
+<p>The model learns to reconstruct clean emoji tokens from corrupted states.</p>
+<pre class="code language-mermaid"><code>flowchart LR
+  X0[clean emoji sequence] --&gt; XT[masked/noisy sequence]
+  XT --&gt; NN[DDiT predicts token logits]
+  NN --&gt; XHAT[denoised token distribution]</code></pre>
+<p>For emoji replies, this means the model can fill response tokens while the prompt prefix remains fixed.</p>
+</section>
+<section class="slide" id="slide-11">
+<h1>SUBS Parameterization</h1>
+<p>The repo uses <code>parameterization=subs</code>.</p>
+<p>Practical implication:</p>
+<ul><li>absorbing-state masked diffusion</li><li>simplified objective similar to masked language modeling</li><li>model predicts substitutions for masked/noisy tokens</li><li>training remains compatible with standard NLL metrics</li></ul>
+<p>Why it matters for the demo: we get diffusion-style iterative generation without leaving the discrete emoji vocabulary.</p>
+</section>
+<section class="slide" id="slide-12">
+<h1>Conditional Generation</h1>
+<p>At inference:</p>
+<pre class="code language-text"><code>[BOS] prompt_emoji [SEP] [MASK] [MASK] [MASK] ...</code></pre>
+<p>The sampler:</p>
+<p>1. fixes the prompt prefix</p>
+<p>2. denoises response positions</p>
+<p>3. stops at <code>[EOS]</code></p>
+<p>4. optionally clamps after 3 response tokens</p>
+<p>The 3-token cap is a decode-time product constraint, not a separate semantic ranker.</p>
+</section>
+<section class="slide" id="slide-13">
+<h1>Two-Phase Training</h1>
+<pre class="code language-mermaid"><code>flowchart TD
+  T2E[Text2Emoji corpus] --&gt; BGE[BGE text encoder]
+  BGE --&gt; PAIRS[semantic emoji pairs]
+  PAIRS --&gt; P1[Phase 1: semantic scaffold]
+  P1 --&gt; CKPT[phase1 checkpoint]
+  REPLY[repo emoji_reply.jsonl] --&gt; P2[Phase 2: reply tuning]
+  CKPT --&gt; P2
+  P2 --&gt; DEMO[demo checkpoint]</code></pre>
+</section>
+<section class="slide" id="slide-14">
+<h1>Phase 1: Semantic Scaffold</h1>
+<p>Purpose: teach broad emoji semantics before seeing the small reply dataset.</p>
+<p>For <code>hard1</code>:</p>
+<ul><li>semantic pairs: <code>100,000</code></li><li>top-k semantic neighbors: <code>5</code></li><li>steps: <code>1,000</code></li><li>validation NLL improved from <code>8.1557</code> to <code>3.7048</code></li></ul>
+<p>The teacher encoder is only used offline to build training pairs. It is not in the deployed model.</p>
+</section>
+<section class="slide" id="slide-15">
+<h1>Phase 2: Reply Tuning</h1>
+<p>Purpose: teach prompt-to-response behavior.</p>
+<p>For <code>hard1</code>:</p>
+<ul><li>data: <code>data/emoji_reply/emoji_reply.jsonl</code></li><li>rows: <code>2,520</code></li><li>steps: <code>3,000</code></li><li>batch: <code>512</code></li><li>permutation augmentation: <code>1.0</code></li><li>benchmark rows excluded from training when configured</li></ul>
+<p>The reply dataset is small, so augmentation is doing real work.</p>
+</section>
+<section class="slide" id="slide-16">
+<h1>Permutation Augmentation</h1>
+<p>During Phase 2, prompt and response emoji order can be shuffled.</p>
+<pre class="code language-text"><code>🎤🎶🌃 -&gt; 🎸🎧
+🌃🎤🎶 -&gt; 🎧🎸
+🎶🌃🎤 -&gt; 🎸🎧</code></pre>
+<p>This pushes the model toward bag-level semantic behavior instead of brittle sequence memorization.</p>
+</section>
+<section class="slide" id="slide-17">
+<h1>Why Diffusion Helps Here</h1>
+<p>Autoregressive decoding imposes a left-to-right response order.</p>
+<p>Diffusion gives us:</p>
+<ul><li>bidirectional response refinement</li><li>natural masked-token objectives</li><li>prompt conditioning without causal masking</li><li>easier treatment of response as a small unordered semantic set</li></ul>
+<p>The architecture matches the task better than a generic chat completion interface.</p>
+</section>
+<section class="slide" id="slide-18">
+<h1>Sampler</h1>
+<p>The repo uses the MDLM sampler path:</p>
+<pre class="code language-text"><code>sampling.predictor = ddpm_cache
+sampling.steps = 32 for eval/demo</code></pre>
+<p>For demo output:</p>
+<pre class="code language-text"><code>--max-response-tokens 3</code></pre>
+<p>This improves stability because emoji replies are naturally short and the model no longer tries to fill a 64-token canvas.</p>
+</section>
+<section class="slide" id="slide-19">
+<h1>Key Results</h1>
+<p>Repo-derived permutation eval:</p>
+<table><thead><tr><th>model</th><th>perm stability</th><th>target Jaccard</th></tr></thead><tbody><tr><td>full3 small</td><td>0.0588</td><td>0.0523</td></tr><tr><td>hard1 best</td><td>0.1372</td><td>0.1290</td></tr><tr><td>hard1 last</td><td>0.2330</td><td>0.2271</td></tr><tr><td>hard1 last, capped 3</td><td>0.4778</td><td>0.2561</td></tr></tbody></table>
+<p>The architecture/training changes improved the metric that matters for the demo.</p>
+</section>
+<section class="slide" id="slide-20">
+<h1>Frontier Comparison</h1>
+<p>OpenRouter thinking-off eval, best-of-7 benchmark score:</p>
+<table><thead><tr><th>model</th><th>best@7 score</th><th>best@7 Jaccard</th></tr></thead><tbody><tr><td>Qwen 3.7 Plus</td><td>0.4797</td><td>0.3672</td></tr><tr><td>GLM 5.2</td><td>0.4532</td><td>0.3380</td></tr><tr><td>Gemini 3.1 Flash Lite</td><td>0.4442</td><td>0.3261</td></tr><tr><td>GPT-5.5</td><td>0.4385</td><td>0.3195</td></tr><tr><td>Claude Opus 4.8</td><td>0.4334</td><td>0.3149</td></tr></tbody></table>
+<p>Gemini 3.1 Pro was excluded from the thinking-off table because OpenRouter requires reasoning for that endpoint.</p>
+</section>
+<section class="slide" id="slide-21">
+<h1>What The Model Is Good At</h1>
+<ul><li>compact emoji-only generation</li><li>semantic adjacency</li><li>prompt permutation robustness</li><li>low-latency local inference compared with frontier APIs</li><li>transparent verifier metrics</li></ul>
+<p>Best demo frame:</p>
+<pre class="code language-text"><code>Specialized small diffusion model reaches frontier-level emoji overlap
+while giving us controllable order-invariant generation.</code></pre>
+</section>
+<section class="slide" id="slide-22">
+<h1>Current Limitations</h1>
+<ul><li>validation NLL and permutation stability do not fully agree</li><li><code>hard1_last</code> is more stable but likely overfit by NLL</li><li>reply data is small and noisy</li><li>exact target matching remains low</li><li>prompt-bag heldout fine-tunes collapsed semantic quality</li></ul>
+<p>Do not claim general emoji reasoning. Claim specialized, measured behavior.</p>
+</section>
+<section class="slide" id="slide-23">
+<h1>Architecture Takeaway</h1>
+<p>The win is not a bigger chat model.</p>
+<p>It is a narrow architecture match:</p>
+<pre class="code language-text"><code>atomic emoji tokens
++ bidirectional masked diffusion
++ semantic scaffold pretraining
++ permutation augmentation
++ capped response decoding
+= controllable emoji semantic replies</code></pre>
+</section>
+<section class="slide" id="slide-24">
+<h1>Demo Slide</h1>
+<p>Show the same prompt bag in different orders:</p>
+<pre class="code language-text"><code>🎤🎶🌃 -&gt; 🎺🥁🎧
+🌃🎤🎶 -&gt; 🎺🎷🎶
+🎶🌃🎤 -&gt; 🎸🎤🥁</code></pre>
+<p>Then show the metric:</p>
+<pre class="code language-text"><code>full3 stability:      0.0588
+hard1 capped3:        0.4778</code></pre>
+<p>That is the cleanest architecture story.</p>
+</section>
+</main>
+<nav class="controls" aria-label="Slide controls">
+  <button id="prev" type="button">Prev</button>
+  <span class="counter"><span id="current">1</span> / 24</span>
+  <button id="next" type="button">Next</button>
+</nav>
+<script>
+const slides = [...document.querySelectorAll('.slide')];
+let index = Number(location.hash.replace('#slide-', '')) - 1;
+if (!Number.isInteger(index) || index < 0 || index >= slides.length) index = 0;
+function show(next) {
+  index = Math.max(0, Math.min(slides.length - 1, next));
+  slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
+  document.getElementById('current').textContent = String(index + 1);
+  history.replaceState(null, '', '#slide-' + (index + 1));
+}
+document.getElementById('prev').onclick = () => show(index - 1);
+document.getElementById('next').onclick = () => show(index + 1);
+document.addEventListener('keydown', (event) => {
+  if (['ArrowRight', 'PageDown', ' '].includes(event.key)) show(index + 1);
+  if (['ArrowLeft', 'PageUp', 'Backspace'].includes(event.key)) show(index - 1);
+  if (event.key === 'Home') show(0);
+  if (event.key === 'End') show(slides.length - 1);
+});
+show(index);
+</script>
+</body>
+</html>

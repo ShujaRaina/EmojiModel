@@ -25,5 +25,8 @@ emoji_supervised_pad_tokens: 0
 permutation_augment_prob: 0.6
 permutation_augment_prompt: true
 permutation_augment_response: true
+emoji_infill_train_prob: 0.0
+emoji_infill_reveal_fraction: 0.5
+emoji_infill_reveal_pattern: mixed
 wrap: False
 streaming: False

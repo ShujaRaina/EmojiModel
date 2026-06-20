@@ -34,6 +34,10 @@ def main():
     p.add_argument('--num-groups', type=int, default=24)
     p.add_argument('--permutations-per-group', type=int, default=3)
     p.add_argument('--seed', type=int, default=1)
+    p.add_argument('--split-strategy', default='random')
+    p.add_argument('--split-partition', default='all')
+    p.add_argument('--split-validation-size', type=float, default=0.05)
+    p.add_argument('--split-seed', type=int, default=42)
     p.add_argument('--steps', type=int, default=32)
     p.add_argument('--length', type=int, default=64)
     p.add_argument('--model', default='medium')
@@ -60,7 +64,11 @@ def main():
 
     base = eps.read_reply_data_groups(
         args.reply_data_file, args.num_groups,
-        args.permutations_per_group, args.seed)
+        args.permutations_per_group, args.seed,
+        split_strategy=args.split_strategy,
+        validation_size=args.split_validation_size,
+        split_seed=args.split_seed,
+        split_partition=args.split_partition)
 
     combined = collections.OrderedDict()
     originals = {}
