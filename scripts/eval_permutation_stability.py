@@ -14,6 +14,7 @@ Example:
 """
 import argparse
 import collections
+import hashlib
 import itertools
 import json
 import os
@@ -26,6 +27,7 @@ sys.path.insert(0, os.path.dirname(
 import hydra
 import omegaconf
 import torch
+import torch.nn.functional as F
 
 omegaconf.OmegaConf.register_new_resolver(
   'cwd', os.getcwd, replace=True)
@@ -48,6 +50,7 @@ torch.load = _torch_load
 
 import dataloader
 import diffusion
+from scripts import emoji_metrics
 
 
 def parse_checkpoint(value):
@@ -74,53 +77,97 @@ def _emoji_text(value):
   return ''.join(dataloader.extract_emoji_graphemes(value or ''))
 
 
-def read_reply_data_groups(path, num_groups, permutations_per_group, seed):
+def _reply_row_split_key(row, strategy):
+  return dataloader._emoji_reply_split_key(row, strategy)
+
+
+def _partition_reply_rows(rows, strategy, validation_size, split_seed,
+                          partition):
+  if strategy == 'random' or partition == 'all':
+    return rows
+  keys = [_reply_row_split_key(row, strategy) for _, row in rows]
+  unique_keys = sorted(set(keys))
+  if len(unique_keys) <= 1:
+    return rows
+
+  def key_sort_value(key):
+    return hashlib.sha1(f'{split_seed}:{key}'.encode('utf-8')).hexdigest()
+
+  shuffled_keys = sorted(unique_keys, key=key_sort_value)
+  holdout_count = max(1, int(round(len(shuffled_keys) * validation_size)))
+  holdout_count = min(holdout_count, len(shuffled_keys) - 1)
+  holdout_keys = set(shuffled_keys[:holdout_count])
+  if partition == 'validation':
+    return [
+      item for item, key in zip(rows, keys)
+      if key in holdout_keys]
+  if partition == 'train':
+    return [
+      item for item, key in zip(rows, keys)
+      if key not in holdout_keys]
+  raise ValueError('split_partition must be all, train, or validation.')
+
+
+def read_reply_data_groups(path, num_groups, permutations_per_group, seed,
+                           split_strategy='random',
+                           validation_size=0.05,
+                           split_seed=42,
+                           split_partition='all'):
   """Build prompt permutation groups from the repo reply dataset only."""
   rng = random.Random(seed)
   groups = collections.OrderedDict()
+  rows = []
   with open(path, 'r', encoding='utf-8') as f:
     for line_no, line in enumerate(f):
-      if len(groups) >= num_groups:
-        break
       if not line.strip():
         continue
       row = json.loads(line)
-      prompt_tokens = dataloader.extract_emoji_graphemes(
-        row.get('input') or row.get('prompt_emoji') or row.get('emoji') or '')
-      response = _emoji_text(
-        row.get('output') or row.get('response_emoji') or row.get('emoji') or '')
-      if len(prompt_tokens) < 2 or not response:
-        continue
+      rows.append((line_no, row))
+  rows = _partition_reply_rows(
+    rows,
+    split_strategy,
+    validation_size,
+    split_seed,
+    split_partition)
+  for line_no, row in rows:
+    if len(groups) >= num_groups:
+      break
+    prompt_tokens = dataloader.extract_emoji_graphemes(
+      row.get('input') or row.get('prompt_emoji') or row.get('emoji') or '')
+    response = _emoji_text(
+      row.get('output') or row.get('response_emoji') or row.get('emoji') or '')
+    if len(prompt_tokens) < 2 or not response:
+      continue
 
-      variants = []
-      seen = set()
-      original = ''.join(prompt_tokens)
-      variants.append(original)
-      seen.add(original)
-      attempts = 0
-      while len(variants) < permutations_per_group and attempts < 64:
-        attempts += 1
-        shuffled = list(prompt_tokens)
-        rng.shuffle(shuffled)
-        candidate = ''.join(shuffled)
-        if candidate not in seen:
-          variants.append(candidate)
-          seen.add(candidate)
+    variants = []
+    seen = set()
+    original = ''.join(prompt_tokens)
+    variants.append(original)
+    seen.add(original)
+    attempts = 0
+    while len(variants) < permutations_per_group and attempts < 64:
+      attempts += 1
+      shuffled = list(prompt_tokens)
+      rng.shuffle(shuffled)
+      candidate = ''.join(shuffled)
+      if candidate not in seen:
+        variants.append(candidate)
+        seen.add(candidate)
 
-      if len(variants) < 2:
-        continue
+    if len(variants) < 2:
+      continue
 
-      group_id = f"reply_{line_no:05d}_{row.get('topic', 'untagged')}"
-      groups[group_id] = [
-        {
-          'canonical_id': group_id,
-          'topic': row.get('topic', ''),
-          'instruction': row.get('instruction', ''),
-          'prompt_emoji': prompt,
-          'response_emoji': response,
-        }
-        for prompt in variants
-      ]
+    group_id = f"reply_{line_no:05d}_{row.get('topic', 'untagged')}"
+    groups[group_id] = [
+      {
+        'canonical_id': group_id,
+        'topic': row.get('topic', ''),
+        'instruction': row.get('instruction', ''),
+        'prompt_emoji': prompt,
+        'response_emoji': response,
+      }
+      for prompt in variants
+    ]
   return groups
 
 
@@ -154,13 +201,34 @@ def prefix_for_prompt(tokenizer, prompt, length):
   return [tokenizer.bos_token_id] + prompt_ids + [tokenizer.sep_token_id]
 
 
-def extract_response(tokenizer, token_ids, prefix_len):
+def extract_response_with_stop_stats(tokenizer, token_ids, prefix_len):
+  tail = token_ids[prefix_len:]
+  eos_rel = None
+  pad_rel = None
+  for offset, token_id in enumerate(tail):
+    if eos_rel is None and token_id == tokenizer.eos_token_id:
+      eos_rel = offset
+    if pad_rel is None and token_id == tokenizer.pad_token_id:
+      pad_rel = offset
+    if eos_rel is not None and pad_rel is not None:
+      break
+
   out = []
-  for token_id in token_ids[prefix_len:]:
+  for token_id in tail:
     if token_id in {tokenizer.eos_token_id, tokenizer.pad_token_id}:
       break
     out.append(token_id)
-  return tokenizer.decode(out).strip()
+  return {
+    'generated_emoji': tokenizer.decode(out).strip(),
+    'eos_rel': eos_rel,
+    'pad_rel': pad_rel,
+    'decoded_len': len(out),
+  }
+
+
+def extract_response(tokenizer, token_ids, prefix_len):
+  return extract_response_with_stop_stats(
+    tokenizer, token_ids, prefix_len)['generated_emoji']
 
 
 @torch.no_grad()
@@ -213,7 +281,7 @@ def sample_model(args, label, checkpoint, groups):
   outputs_by_group = collections.defaultdict(list)
   records = []
   for row, ids, prefix_len in zip(rows, sample_ids, prefix_lens):
-    generated = extract_response(tokenizer, ids, prefix_len)
+    stop_stats = extract_response_with_stop_stats(tokenizer, ids, prefix_len)
     record = {
       'model': label,
       'canonical_id': row.get('canonical_id', row.get('topic', 'ungrouped')),
@@ -221,43 +289,83 @@ def sample_model(args, label, checkpoint, groups):
       'instruction': row.get('instruction', ''),
       'prompt_emoji': row['prompt_emoji'],
       'target_emoji': row.get('response_emoji', row.get('emoji', '')),
-      'generated_emoji': generated,
+      **stop_stats,
     }
+    target_metrics = emoji_metrics.score_pair(
+      record['generated_emoji'], record['target_emoji'])
+    for key, value in target_metrics.items():
+      if key != 'matched_reference':
+        record[f'target_{key}'] = value
     outputs_by_group[record['canonical_id']].append(record)
     records.append(record)
   return outputs_by_group, records
 
 
-def emoji_bag(text):
-  return collections.Counter(dataloader.extract_emoji_graphemes(text))
+class EmojiSemanticScorer:
+  """Offline semantic scorer from Text2Emoji/BGE table embeddings."""
+
+  def __init__(self, table_path):
+    payload = torch.load(table_path, map_location='cpu')
+    rows = payload['rows']
+    embeddings = F.normalize(payload['text_embedding'].float(), dim=-1)
+    token_vectors = collections.defaultdict(list)
+    for row, embedding in zip(rows, embeddings):
+      for token in set(dataloader.extract_emoji_graphemes(row.get('emoji', ''))):
+        token_vectors[token].append(embedding)
+    self.token_embedding = {}
+    for token, vectors in token_vectors.items():
+      self.token_embedding[token] = F.normalize(
+        torch.stack(vectors, dim=0).mean(dim=0), dim=0)
+    if self.token_embedding:
+      center = torch.stack(list(self.token_embedding.values()), dim=0).mean(
+        dim=0)
+      self.token_embedding = {
+        token: F.normalize(embedding - center, dim=0)
+        for token, embedding in self.token_embedding.items()
+      }
+
+  def embed(self, text):
+    vectors = [
+      self.token_embedding[token]
+      for token in dataloader.extract_emoji_graphemes(text)
+      if token in self.token_embedding]
+    if not vectors:
+      return None
+    return F.normalize(torch.stack(vectors, dim=0).mean(dim=0), dim=0)
+
+  def similarity(self, left, right):
+    left_embedding = self.embed(left)
+    right_embedding = self.embed(right)
+    if left_embedding is None and right_embedding is None:
+      return 1.0
+    if left_embedding is None or right_embedding is None:
+      return 0.0
+    return float(torch.dot(left_embedding, right_embedding).item())
 
 
-def bag_jaccard(a, b):
-  a = emoji_bag(a)
-  b = emoji_bag(b)
-  if not a and not b:
-    return 1.0
-  keys = set(a) | set(b)
-  inter = sum(min(a[k], b[k]) for k in keys)
-  union = sum(max(a[k], b[k]) for k in keys)
-  return inter / union if union else 0.0
-
-
-def pairwise_stability(records):
+def pairwise_stability(records, scorer=None):
   if len(records) < 2:
     return 1.0
   scores = []
   for left, right in itertools.combinations(records, 2):
-    scores.append(bag_jaccard(
-      left['generated_emoji'], right['generated_emoji']))
+    if scorer is None:
+      scores.append(emoji_metrics.bag_jaccard(
+        left['generated_emoji'], right['generated_emoji']))
+    else:
+      scores.append(scorer.similarity(
+        left['generated_emoji'], right['generated_emoji']))
   return sum(scores) / len(scores)
 
 
-def target_alignment(records):
+def target_alignment(records, scorer=None):
   if not records:
     return 0.0
+  if scorer is None:
+    return sum(
+      emoji_metrics.bag_jaccard(r['generated_emoji'], r['target_emoji'])
+      for r in records) / len(records)
   return sum(
-    bag_jaccard(r['generated_emoji'], r['target_emoji'])
+    scorer.similarity(r['generated_emoji'], r['target_emoji'])
     for r in records) / len(records)
 
 
@@ -273,8 +381,23 @@ def main():
                       default='data/emoji_reply/emoji_reply.jsonl')
   parser.add_argument('--num-groups', type=int, default=24)
   parser.add_argument('--permutations-per-group', type=int, default=3)
+  parser.add_argument('--split-strategy',
+                      choices=[
+                        'random',
+                        'prompt_bag',
+                        'response_bag',
+                        'prompt_response_bag'],
+                      default='random')
+  parser.add_argument('--split-partition',
+                      choices=['all', 'train', 'validation'],
+                      default='all')
+  parser.add_argument('--split-validation-size', type=float, default=0.05)
+  parser.add_argument('--split-seed', type=int, default=42)
   parser.add_argument('--data-cache', default='/tmp/emoji_mdlm_two_phase')
   parser.add_argument('--vocab-cache', default=None)
+  parser.add_argument('--semantic-table', default=None,
+                      help='Optional Text2Emoji/BGE semantic_table.pt for '
+                           'offline semantic cosine eval.')
   parser.add_argument('--jsonl-out', default=None)
   parser.add_argument('--steps', type=int, default=64)
   parser.add_argument('--length', type=int, default=64)
@@ -297,29 +420,73 @@ def main():
       args.reply_data_file,
       args.num_groups,
       args.permutations_per_group,
-      args.seed)
+      args.seed,
+      split_strategy=args.split_strategy,
+      validation_size=args.split_validation_size,
+      split_seed=args.split_seed,
+      split_partition=args.split_partition)
   if not groups:
     raise ValueError(f'No permutation groups found for source={args.source}')
+  semantic_scorer = (
+    EmojiSemanticScorer(args.semantic_table)
+    if args.semantic_table else None)
   all_records = []
   summaries = []
   for checkpoint_arg in args.checkpoint:
     label, checkpoint = parse_checkpoint(checkpoint_arg)
     outputs_by_group, records = sample_model(args, label, checkpoint, groups)
+    if semantic_scorer is not None:
+      for record in records:
+        record['semantic_target_cosine'] = semantic_scorer.similarity(
+          record['generated_emoji'], record['target_emoji'])
     all_records.extend(records)
     group_scores = {
       group_id: pairwise_stability(group_records)
       for group_id, group_records in outputs_by_group.items()
     }
-    target_scores = {
+    target_jaccard_scores = {
       group_id: target_alignment(group_records)
       for group_id, group_records in outputs_by_group.items()
     }
+    target_benchmark_scores = {
+      group_id: (
+        sum(r['target_benchmark_score'] for r in group_records)
+        / len(group_records))
+      for group_id, group_records in outputs_by_group.items()
+    }
+    target_f1_scores = {
+      group_id: (
+        sum(r['target_bag_f1'] for r in group_records)
+        / len(group_records))
+      for group_id, group_records in outputs_by_group.items()
+    }
+    semantic_group_scores = {}
+    semantic_target_scores = {}
+    if semantic_scorer is not None:
+      semantic_group_scores = {
+        group_id: pairwise_stability(group_records, semantic_scorer)
+        for group_id, group_records in outputs_by_group.items()
+      }
+      semantic_target_scores = {
+        group_id: target_alignment(group_records, semantic_scorer)
+        for group_id, group_records in outputs_by_group.items()
+      }
     summaries.append({
       'model': label,
       'mean_permutation_stability': (
         sum(group_scores.values()) / len(group_scores)),
+      'mean_target_benchmark_score': (
+        sum(target_benchmark_scores.values()) / len(target_benchmark_scores)),
+      'mean_target_bag_f1': (
+        sum(target_f1_scores.values()) / len(target_f1_scores)),
       'mean_target_bag_jaccard': (
-        sum(target_scores.values()) / len(target_scores)),
+        sum(target_jaccard_scores.values()) / len(target_jaccard_scores)),
+      'mean_semantic_permutation_stability': (
+        sum(semantic_group_scores.values()) / len(semantic_group_scores)
+        if semantic_group_scores else None),
+      'mean_semantic_target_cosine': (
+        sum(semantic_target_scores.values()) / len(semantic_target_scores)
+        if semantic_target_scores else None),
       'groups': group_scores,
     })
 
@@ -329,18 +496,38 @@ def main():
       for record in all_records:
         f.write(json.dumps(record, ensure_ascii=False) + '\n')
 
-  print('model\tperm_stability\ttarget_bag_jaccard')
+  header = [
+    'model',
+    'perm_stability',
+    'target_score',
+    'target_bag_f1',
+    'target_bag_jaccard']
+  if semantic_scorer is not None:
+    header.extend(['semantic_stability', 'semantic_target_cosine'])
+  print('\t'.join(header))
   for summary in summaries:
-    print(
-      f"{summary['model']}\t"
-      f"{summary['mean_permutation_stability']:.4f}\t"
-      f"{summary['mean_target_bag_jaccard']:.4f}")
+    values = [
+      summary['model'],
+      f"{summary['mean_permutation_stability']:.4f}",
+      f"{summary['mean_target_benchmark_score']:.4f}",
+      f"{summary['mean_target_bag_f1']:.4f}",
+      f"{summary['mean_target_bag_jaccard']:.4f}",
+    ]
+    if semantic_scorer is not None:
+      values.extend([
+        f"{summary['mean_semantic_permutation_stability']:.4f}",
+        f"{summary['mean_semantic_target_cosine']:.4f}",
+      ])
+    print('\t'.join(values))
   print('\nSample generations:')
   for record in all_records[:12]:
     print(
       f"{record['model']} {record['canonical_id']} "
       f"{record['prompt_emoji']} -> {record['generated_emoji']} "
-      f"(target {record['target_emoji']})")
+      f"(target {record['target_emoji']}, "
+      f"eos_rel={record['eos_rel']}, "
+      f"pad_rel={record['pad_rel']}, "
+      f"decoded_len={record['decoded_len']})")
 
 
 if __name__ == '__main__':

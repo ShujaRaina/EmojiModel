@@ -403,6 +403,130 @@ def _normalize_emoji_reply_columns(raw):
   return raw
 
 
+def _emoji_reply_row_fingerprint(row):
+  payload = {
+    'instruction': row.get('instruction') or row.get('text') or '',
+    'input': (
+      row.get('input')
+      or row.get('prompt_emoji')
+      or row.get('source_emoji')
+      or ''),
+    'output': (
+      row.get('output')
+      or row.get('emoji')
+      or row.get('target_emoji')
+      or row.get('response_emoji')
+      or ''),
+    'topic': row.get('topic') or '',
+  }
+  return hashlib.sha1(
+    json.dumps(payload, sort_keys=True, ensure_ascii=False).encode(
+      'utf-8')).hexdigest()
+
+
+def _load_emoji_reply_benchmark(path, cache_dir):
+  path = _resolve_repo_path(path)
+  if not path or not utils.fsspec_exists(path):
+    return None
+  return _normalize_emoji_reply_columns(
+    _load_emoji_reply_dataset(path, cache_dir))
+
+
+def _canonical_emoji_bag(text):
+  tokens = extract_emoji_graphemes(str(text or ''))
+  return ' '.join(sorted(tokens))
+
+
+def _first_emoji_row_value(row, names):
+  for name in names:
+    if name not in row or row[name] is None:
+      continue
+    value = str(row[name])
+    if extract_emoji_graphemes(value):
+      return value
+  return ''
+
+
+def _emoji_reply_split_key(row, strategy):
+  prompt = _first_emoji_row_value(row, [
+    'prompt_emoji', 'source_emoji', 'input_emoji',
+    'prompt', 'source', 'input', 'instruction', 'text'])
+  response = _first_emoji_row_value(row, [
+    'response_emoji', 'target_emoji', 'output_emoji',
+    'response', 'target', 'output', 'emoji'])
+  prompt_key = _canonical_emoji_bag(prompt)
+  response_key = _canonical_emoji_bag(response)
+  if strategy == 'prompt_bag':
+    return prompt_key
+  if strategy == 'response_bag':
+    return response_key
+  if strategy == 'prompt_response_bag':
+    return f'{prompt_key}=>{response_key}'
+  raise ValueError(
+    'Unsupported emoji_split_strategy. Use random, prompt_bag, '
+    'response_bag, or prompt_response_bag.')
+
+
+def _split_emoji_reply_dataset(raw, data_config):
+  validation_size = float(data_config.get('emoji_validation_size', 0.05))
+  split_seed = int(data_config.get('emoji_split_seed', 42))
+  strategy = data_config.get('emoji_split_strategy', 'random')
+  benchmark_file = data_config.get('emoji_benchmark_file', None)
+  benchmark = _load_emoji_reply_benchmark(
+    benchmark_file, data_config.get('cache_dir', None))
+  if benchmark is not None and len(benchmark):
+    benchmark_fingerprints = {
+      _emoji_reply_row_fingerprint(benchmark[i])
+      for i in range(len(benchmark))}
+    kept_indices = [
+      idx for idx in range(len(raw))
+      if _emoji_reply_row_fingerprint(raw[idx]) not in benchmark_fingerprints]
+    held_out = len(raw) - len(kept_indices)
+    if held_out:
+      LOGGER.info(
+        f'Emoji reply final benchmark holdout: {held_out} source rows '
+        f'excluded before dev split; {len(benchmark)} benchmark rows are '
+        'reserved for final external evaluation only.')
+      raw = raw.select(kept_indices)
+    else:
+      LOGGER.warning(
+        f'emoji_benchmark_file={benchmark_file} had no overlap with the '
+        'training data; falling back to configured validation split.')
+
+  if strategy == 'random':
+    return raw.train_test_split(test_size=validation_size, seed=split_seed)
+
+  rows = [raw[i] for i in range(len(raw))]
+  keys = [_emoji_reply_split_key(row, strategy) for row in rows]
+  unique_keys = sorted(set(keys))
+  if len(unique_keys) <= 1:
+    LOGGER.warning(
+      f'emoji_split_strategy={strategy} produced <=1 unique split keys; '
+      'falling back to row-random split.')
+    return raw.train_test_split(test_size=validation_size, seed=split_seed)
+
+  def key_sort_value(key):
+    digest = hashlib.sha1(f'{split_seed}:{key}'.encode('utf-8')).hexdigest()
+    return digest
+
+  shuffled_keys = sorted(unique_keys, key=key_sort_value)
+  holdout_count = max(1, int(round(len(shuffled_keys) * validation_size)))
+  holdout_count = min(holdout_count, len(shuffled_keys) - 1)
+  holdout_keys = set(shuffled_keys[:holdout_count])
+  train_indices = [
+    idx for idx, key in enumerate(keys) if key not in holdout_keys]
+  valid_indices = [
+    idx for idx, key in enumerate(keys) if key in holdout_keys]
+  LOGGER.info(
+    f'Emoji reply {strategy} split: '
+    f'{len(train_indices)} train rows, {len(valid_indices)} validation rows, '
+    f'{len(unique_keys)} unique bags, {len(holdout_keys)} held out.')
+  return datasets.DatasetDict({
+    'train': raw.select(train_indices),
+    'test': raw.select(valid_indices),
+  })
+
+
 def _default_emoji_reply_data_file():
   return os.path.join(_repo_root(), 'data', 'emoji_reply', 'emoji_reply.jsonl')
 
@@ -651,8 +775,16 @@ def _first_emoji_value(example, names, index):
 
 def _tokenize_text2emoji(example, tokenizer, block_size, eot=None,
                          paired=False,
-                         max_emoji_tokens=32):
+                         max_emoji_tokens=32,
+                         max_prompt_emoji_tokens=None,
+                         max_response_emoji_tokens=None,
+                         supervised_pad_tokens=0):
   """Build fixed-length emoji-only training sequences."""
+  if max_prompt_emoji_tokens is None:
+    max_prompt_emoji_tokens = max_emoji_tokens
+  if max_response_emoji_tokens is None:
+    max_response_emoji_tokens = max_emoji_tokens
+  supervised_pad_tokens = max(0, int(supervised_pad_tokens or 0))
   input_ids_batch = []
   attention_batch = []
   cond_batch = []
@@ -678,7 +810,7 @@ def _tokenize_text2emoji(example, tokenizer, block_size, eot=None,
     left_emoji = left_emoji if left_emoji is not None else ''
     left_ids = tokenizer(
       left_emoji, add_special_tokens=False)['input_ids']
-    left_ids = left_ids[:max_emoji_tokens]
+    left_ids = left_ids[:max_prompt_emoji_tokens]
     if right_emoji is None:
       seq = [tokenizer.bos_token_id] + left_ids + [tokenizer.eos_token_id]
       cond = [0] * len(seq)
@@ -686,8 +818,11 @@ def _tokenize_text2emoji(example, tokenizer, block_size, eot=None,
       right_emoji = right_emoji if right_emoji is not None else ''
       right_ids = tokenizer(
         right_emoji, add_special_tokens=False)['input_ids']
-      right_ids = right_ids[:max_emoji_tokens]
-      avail_left = block_size - 3 - len(right_ids)
+      right_ids = right_ids[:max_response_emoji_tokens]
+      supervised_pad = min(supervised_pad_tokens, max(0, block_size - 3))
+      room_for_right = max(0, block_size - 3 - supervised_pad)
+      right_ids = right_ids[:room_for_right]
+      avail_left = block_size - 3 - len(right_ids) - supervised_pad
       if avail_left < 0:
         right_ids = right_ids[:block_size - 3]
         avail_left = 0
@@ -696,7 +831,11 @@ def _tokenize_text2emoji(example, tokenizer, block_size, eot=None,
         [tokenizer.bos_token_id]
         + left_ids
         + [tokenizer.sep_token_id])
-      seq = prefix + right_ids + [tokenizer.eos_token_id]
+      seq = (
+        prefix
+        + right_ids
+        + [tokenizer.eos_token_id]
+        + ([tokenizer.pad_token_id] * supervised_pad))
       cond = [1] * min(len(prefix), block_size)
       cond = cond + [0] * (len(seq) - len(cond))
     seq, attention = _pad_tokenized_sequence(
@@ -741,6 +880,30 @@ def get_dataset(
     repeat = data_config.get('emoji_challenge_repeat', 1)
     if repeat and int(repeat) != 1:
       cache_dataset_name = f'{cache_dataset_name}_r{int(repeat)}'
+  if dataset_name == 'emoji_reply':
+    benchmark_file = data_config.get('emoji_benchmark_file', None)
+    if benchmark_file:
+      benchmark_path = _resolve_repo_path(benchmark_file)
+      if benchmark_path and utils.fsspec_exists(benchmark_path):
+        cache_dataset_name = (
+          f'{cache_dataset_name}_bench_{_path_fingerprint(benchmark_path)}')
+    split_strategy = data_config.get('emoji_split_strategy', 'random')
+    split_seed = int(data_config.get('emoji_split_seed', 42))
+    validation_size = float(data_config.get('emoji_validation_size', 0.05))
+    if split_strategy != 'random':
+      val_tag = str(validation_size).replace('.', 'p')
+      cache_dataset_name = (
+        f'{cache_dataset_name}_split{split_strategy}'
+        f'_val{val_tag}_seed{split_seed}')
+    prompt_cap = data_config.get('emoji_max_prompt_tokens', None)
+    response_cap = data_config.get('emoji_max_response_tokens', None)
+    pad_loss = data_config.get('emoji_supervised_pad_tokens', 0)
+    if prompt_cap is not None:
+      cache_dataset_name = f'{cache_dataset_name}_pmax{int(prompt_cap)}'
+    if response_cap is not None:
+      cache_dataset_name = f'{cache_dataset_name}_rmax{int(response_cap)}'
+    if pad_loss and int(pad_loss) > 0:
+      cache_dataset_name = f'{cache_dataset_name}_padloss{int(pad_loss)}'
   if wrap:
     filename = (
       f'{cache_dataset_name}_{tokenizer_tag}_{mode}_bs{block_size}'
@@ -845,7 +1008,7 @@ def get_dataset(
         LOGGER.warning(
           'emoji_include_challenge_in_train is true, but no challenge '
           f'dataset exists at {challenge_path}.')
-    split = raw.train_test_split(test_size=0.05, seed=42)
+    split = _split_emoji_reply_dataset(raw, data_config)
     dataset = datasets.DatasetDict(
       {'train': split['train'], 'validation': split['test']})
   else:
@@ -889,7 +1052,17 @@ def get_dataset(
         example, tokenizer, block_size, EOS, paired=False)
     if dataset_name == 'emoji_reply':
       return _tokenize_text2emoji(
-        example, tokenizer, block_size, EOS, paired=True)
+        example,
+        tokenizer,
+        block_size,
+        EOS,
+        paired=True,
+        max_prompt_emoji_tokens=data_config.get(
+          'emoji_max_prompt_tokens', None),
+        max_response_emoji_tokens=data_config.get(
+          'emoji_max_response_tokens', None),
+        supervised_pad_tokens=data_config.get(
+          'emoji_supervised_pad_tokens', 0))
     if dataset_name == 'ptb':
       text = example['sentence']
     elif 'scientific_papers' in dataset_name:

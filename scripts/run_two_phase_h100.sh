@@ -87,6 +87,7 @@ COMMON_ARGS=(
 python -u -m main \
   "${COMMON_ARGS[@]}" \
   data.data_file="${SEMANTIC_PAIRS}" \
+  data.emoji_benchmark_file=null \
   data.emoji_include_challenge_in_train=false \
   data.permutation_augment_prob=0.0 \
   trainer.max_steps="${PHASE1_STEPS}" \
@@ -100,8 +101,14 @@ python -u -m main \
 python -u -m main \
   "${COMMON_ARGS[@]}" \
   data.data_file="${REPLY_DATA_FILE}" \
+  data.emoji_benchmark_file="${PHASE2_BENCHMARK_FILE:-data/emoji_reply/benchmark.jsonl}" \
   data.emoji_include_challenge_in_train=false \
   data.emoji_challenge_repeat=1 \
+  data.emoji_split_strategy="${PHASE2_SPLIT_STRATEGY:-random}" \
+  data.emoji_validation_size="${PHASE2_VALIDATION_SIZE:-0.05}" \
+  data.emoji_split_seed="${PHASE2_SPLIT_SEED:-42}" \
+  data.emoji_max_response_tokens="${PHASE2_MAX_RESPONSE_TOKENS:-null}" \
+  data.emoji_supervised_pad_tokens="${PHASE2_SUPERVISED_PAD_TOKENS:-0}" \
   data.permutation_augment_prob="${PERMUTATION_AUGMENT_PROB:-0.6}" \
   data.permutation_augment_prompt=true \
   data.permutation_augment_response=true \

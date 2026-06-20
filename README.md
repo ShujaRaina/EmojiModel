@@ -191,6 +191,22 @@ EMOJI_REPLY_DATA_FILE=/path/to/emoji_instructions.jsonl \
 
 Supported Phase 2 columns include `prompt_emoji`/`response_emoji`, `source`/`target`, `input`/`output`, `prompt`/`response`, and `instruction`/`output`; non-emoji text is ignored.
 
+The final emoji-reply benchmark is materialized as
+`data/emoji_reply/benchmark.jsonl`. When `data.emoji_benchmark_file` is set,
+training excludes those rows first, then creates a separate dev validation
+split from the remaining data. Rebuild the frozen benchmark from the current
+seed-42 split with:
+```bash
+python scripts/build_emoji_reply_benchmark.py
+```
+
+To score frontier-model outputs, create a JSONL file with `benchmark_id` and
+`generated_emoji` fields, then run:
+```bash
+python scripts/eval_emoji_benchmark.py \
+  --predictions frontier=/path/to/frontier_predictions.jsonl
+```
+
 ### Eval 
 To compute test perplexity, use `mode=ppl_eval`. Example scripts provided in `scripts/`. An example command for perplexity evaluation on OpenWebText is:
 ```
