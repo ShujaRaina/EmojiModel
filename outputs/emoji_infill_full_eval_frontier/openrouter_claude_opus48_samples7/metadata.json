@@ -1,0 +1,43 @@
+{
+  "name": "openrouter_claude_opus48_samples7",
+  "task": "emoji_reply_infill",
+  "source_data": "data/emoji_reply/emoji_reply.jsonl",
+  "excluded_benchmark": "data/emoji_reply/benchmark.jsonl",
+  "split": {
+    "strategy": "prompt_bag",
+    "partition": "validation",
+    "validation_size": 0.1,
+    "seed": 42
+  },
+  "patterns": [
+    "prefix",
+    "suffix",
+    "scattered"
+  ],
+  "examples": 243,
+  "samples_per_problem": 7,
+  "total_scored_rows": 5103,
+  "models": [
+    {
+      "label": "opus48",
+      "model_id": "anthropic/claude-opus-4.8"
+    }
+  ],
+  "thinking_request": {
+    "reasoning_effort": "none",
+    "include_reasoning": false,
+    "reasoning.exclude": true
+  },
+  "semantic_table": "outputs/emoji_two_phase_h100_hard1/semantic_table.pt",
+  "files": {
+    "raw": "openrouter_infill_raw.jsonl",
+    "scored": "openrouter_infill_scored.jsonl",
+    "predictions": "opus48_predictions.jsonl",
+    "summary": "openrouter_infill_summary.csv",
+    "pass_power": "summary_pass_power.csv"
+  },
+  "removed_metrics": [
+    "bag_match",
+    "sequence_match"
+  ]
+}
