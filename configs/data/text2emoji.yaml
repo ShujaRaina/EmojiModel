@@ -1,0 +1,8 @@
+train: text2emoji
+valid: text2emoji
+tokenizer_name_or_path: gpt2
+cache_dir: ${oc.env:HOME}/mdlm_data
+# Sequences are built as `<eot> text <eot> emoji <eot>` and padded to
+# `model.length`, so we do NOT pack/concatenate examples.
+wrap: False
+streaming: False

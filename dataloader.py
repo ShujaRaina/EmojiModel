@@ -300,6 +300,44 @@ def _group_texts(examples, block_size, bos, eos):
   return result
 
 
+def _tokenize_text2emoji(example, tokenizer, block_size, eot,
+                         max_emoji_tokens=32):
+  """Builds fixed-length `<eot> text <eot> emoji <eot>` sequences.
+
+  The shared `<eot>` token (gpt2 `<|endoftext|>`) marks the start, the
+  text/emoji boundary and the end. At sampling time we clamp the
+  `<eot> text <eot>` prefix and let the model infill the emoji span up to
+  the next `<eot>`. Padding uses `<eot>` too but is zeroed out via the
+  attention mask so it never contributes to the loss.
+  """
+  input_ids_batch = []
+  attention_batch = []
+  for text, emoji in zip(example['text'], example['emoji']):
+    text = text if text is not None else ''
+    emoji = emoji if emoji is not None else ''
+    text_ids = tokenizer(text, add_special_tokens=False)['input_ids']
+    emoji_ids = tokenizer(emoji, add_special_tokens=False)['input_ids']
+    emoji_ids = emoji_ids[:max_emoji_tokens]
+    # Reserve 3 slots for the `<eot>` markers; truncate text first so the
+    # emoji target always survives truncation.
+    avail_text = block_size - 3 - len(emoji_ids)
+    if avail_text < 0:
+      emoji_ids = emoji_ids[:block_size - 3]
+      avail_text = 0
+    text_ids = text_ids[:avail_text]
+    seq = [eot] + text_ids + [eot] + emoji_ids + [eot]
+    seq = seq[:block_size]
+    attention = [1] * len(seq)
+    if len(seq) < block_size:
+      pad = block_size - len(seq)
+      seq = seq + [eot] * pad
+      attention = attention + [0] * pad
+    input_ids_batch.append(seq)
+    attention_batch.append(attention)
+  return {'input_ids': input_ids_batch,
+          'attention_mask': attention_batch}
+
+
 def get_dataset(
     dataset_name, tokenizer, wrap, mode, cache_dir,
     block_size=1024, num_proc=len(os.sched_getaffinity(0)), streaming=False):
@@ -370,6 +408,16 @@ def get_dataset(
       'ag_news',
       cache_dir=cache_dir,
       streaming=streaming)
+  elif dataset_name == 'text2emoji':
+    # KomeijiForce/Text2Emoji ships a single `train` split; carve out a
+    # deterministic validation set so we can monitor val loss.
+    raw = datasets.load_dataset(
+      'KomeijiForce/Text2Emoji',
+      split='train',
+      cache_dir=cache_dir)
+    split = raw.train_test_split(test_size=0.01, seed=42)
+    dataset = datasets.DatasetDict(
+      {'train': split['train'], 'validation': split['test']})
   else:
     dataset = datasets.load_dataset(
       dataset_name,
@@ -406,6 +454,9 @@ def get_dataset(
   BOS = tokenizer.encode(tokenizer.bos_token)[0]
 
   def preprocess_and_tokenize(example):
+    if dataset_name == 'text2emoji':
+      return _tokenize_text2emoji(
+        example, tokenizer, block_size, EOS)
     if dataset_name == 'ptb':
       text = example['sentence']
     elif 'scientific_papers' in dataset_name:
@@ -458,6 +509,9 @@ def get_dataset(
   elif dataset_name == 'ag_news':
     tokenized_dataset = tokenized_dataset.remove_columns(
       ['text', 'label'])
+  elif dataset_name == 'text2emoji':
+    tokenized_dataset = tokenized_dataset.remove_columns(
+      ['text', 'emoji', 'topic'])
   else:
     tokenized_dataset = tokenized_dataset.remove_columns(
       'text')
@@ -524,7 +578,9 @@ def get_tokenizer(config):
 
 def get_dataloaders(config, tokenizer, skip_train=False,
                     skip_valid=False, valid_seed=None):
-  num_gpus = torch.cuda.device_count()
+  # On CPU-only machines `device_count()` is 0; treat as a single device so
+  # the batch-size bookkeeping below stays consistent with the trainer.
+  num_gpus = max(torch.cuda.device_count(), 1)
   assert (config.loader.global_batch_size
           == (config.loader.batch_size
               * config.trainer.num_nodes

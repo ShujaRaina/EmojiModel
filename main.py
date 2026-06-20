@@ -15,7 +15,7 @@ import utils
 omegaconf.OmegaConf.register_new_resolver(
   'cwd', os.getcwd)
 omegaconf.OmegaConf.register_new_resolver(
-  'device_count', torch.cuda.device_count)
+  'device_count', lambda: max(torch.cuda.device_count(), 1))
 omegaconf.OmegaConf.register_new_resolver(
   'eval', eval)
 omegaconf.OmegaConf.register_new_resolver(

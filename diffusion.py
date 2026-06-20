@@ -1,3 +1,4 @@
+import contextlib
 import itertools
 import math
 import os
@@ -312,7 +313,11 @@ class Diffusion(L.LightningModule):
   def forward(self, x, sigma):
     """Returns log score."""
     sigma = self._process_sigma(sigma)
-    with torch.cuda.amp.autocast(dtype=torch.float32):
+    if torch.cuda.is_available():
+      autocast_ctx = torch.cuda.amp.autocast(dtype=torch.float32)
+    else:
+      autocast_ctx = contextlib.nullcontext()
+    with autocast_ctx:
       logits = self.backbone(x, sigma)
     
     if self.parameterization == 'subs':
@@ -710,6 +715,83 @@ class Diffusion(L.LightningModule):
     self.backbone.eval()
     self.noise.eval()
     samples = self._sample(num_steps=num_steps, eps=eps)
+    if self.ema:
+      self.ema.restore(itertools.chain(
+        self.backbone.parameters(),
+        self.noise.parameters()))
+    self.backbone.train()
+    self.noise.train()
+    return samples
+
+  @torch.no_grad()
+  def _cond_sample(self, prefix_ids, num_steps=None, eps=1e-5):
+    """Conditional infilling: clamp `prefix_ids` and generate the rest.
+
+    Args:
+      prefix_ids: list of token-id lists. Each prefix occupies the start of
+        the sequence and is held fixed throughout the reverse process; the
+        remaining positions (up to `model.length`) are infilled.
+    Returns:
+      LongTensor of shape (len(prefix_ids), model.length).
+    """
+    if num_steps is None:
+      num_steps = self.config.sampling.steps
+    length = self.config.model.length
+    bsz = len(prefix_ids)
+    x = self._sample_prior(bsz, length).to(self.device)
+    fixed = torch.zeros(bsz, length, dtype=torch.bool,
+                        device=self.device)
+    for i, prefix in enumerate(prefix_ids):
+      prefix = prefix[:length]
+      x[i, :len(prefix)] = torch.tensor(
+        prefix, dtype=torch.int64, device=self.device)
+      fixed[i, :len(prefix)] = True
+    x_fixed = x.clone()
+    timesteps = torch.linspace(
+      1, eps, num_steps + 1, device=self.device)
+    dt = (1 - eps) / num_steps
+    p_x0_cache = None
+    for i in range(num_steps):
+      t = timesteps[i] * torch.ones(
+        x.shape[0], 1, device=self.device)
+      if self.sampler == 'ddpm':
+        x = self._ddpm_update(x, t, dt)
+      elif self.sampler == 'ddpm_cache':
+        p_x0_cache, x_next = self._ddpm_caching_update(
+          x, t, dt, p_x0=p_x0_cache)
+        if (not torch.allclose(x_next, x)
+            or self.time_conditioning):
+          p_x0_cache = None
+        x = x_next
+      else:
+        x = self._analytic_update(x, t, dt)
+      x = torch.where(fixed, x_fixed, x)
+    if self.config.sampling.noise_removal:
+      t = timesteps[-1] * torch.ones(x.shape[0], 1,
+                                     device=self.device)
+      if self.sampler == 'analytic':
+        x = self._denoiser_update(x, t)
+      else:
+        unet_conditioning = self.noise(t)[0]
+        x = self.forward(
+          x, unet_conditioning).argmax(dim=-1)
+      x = torch.where(fixed, x_fixed, x)
+    return x
+
+  def restore_model_and_cond_sample(
+      self, prefix_ids, num_steps=None, eps=1e-5):
+    """EMA-aware wrapper around `_cond_sample`."""
+    if self.ema:
+      self.ema.store(itertools.chain(
+        self.backbone.parameters(),
+        self.noise.parameters()))
+      self.ema.copy_to(itertools.chain(
+        self.backbone.parameters(),
+        self.noise.parameters()))
+    self.backbone.eval()
+    self.noise.eval()
+    samples = self._cond_sample(
+      prefix_ids, num_steps=num_steps, eps=eps)
     if self.ema:
       self.ema.restore(itertools.chain(
         self.backbone.parameters(),

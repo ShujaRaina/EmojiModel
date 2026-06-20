@@ -1,8 +1,12 @@
 import math
 import typing
 
-import flash_attn
-import flash_attn.layers.rotary
+try:
+  import flash_attn
+  import flash_attn.layers.rotary
+except ImportError:
+  # AR baseline requires CUDA flash-attn; unavailable on CPU-only installs.
+  flash_attn = None
 import huggingface_hub
 import omegaconf
 import torch
