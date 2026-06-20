@@ -1,0 +1,2 @@
+model,k,pass_at_k_exact_bag,pass_at_k_exact_sequence,pass_power_at_k_benchmark_score,best_bag_f1_at_k,best_bag_jaccard_at_k
+gpt55,1,0.0,0.0,0.2966666666666667,0.3333333333333333,0.2

@@ -1,0 +1,27 @@
+{
+  "data_file": "data/emoji_reply/emoji_reply.jsonl",
+  "exclude_file": "data/emoji_reply/benchmark.jsonl",
+  "split_strategy": "prompt_bag",
+  "split_partition": "validation",
+  "split_validation_size": 0.1,
+  "split_seed": 42,
+  "mask_seed": 1,
+  "limit": 40,
+  "patterns": [
+    "prefix",
+    "suffix",
+    "scattered"
+  ],
+  "models": [
+    {
+      "label": "gemini31_flash_lite",
+      "model_id": "google/gemini-3.1-flash-lite"
+    }
+  ],
+  "source_rows": 2520,
+  "excluded_benchmark_rows": 126,
+  "post_exclude_rows": 2394,
+  "split_rows": 243,
+  "examples": 40,
+  "items": 120
+}

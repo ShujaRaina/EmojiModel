@@ -1,0 +1,3 @@
+{"pattern": "prefix", "topic": "study", "prompt": "📚💯", "reply": "⏰😩📚", "revealed_k": 1, "reply_len": 3, "infilled": "☕☕", "masked_truth": "😩📚", "bag_f1": 0.0}
+{"pattern": "suffix", "topic": "study", "prompt": "📚💯", "reply": "⏰😩📚", "revealed_k": 1, "reply_len": 3, "infilled": "📚📝", "masked_truth": "⏰😩", "bag_f1": 0.0}
+{"pattern": "scattered", "topic": "study", "prompt": "📚💯", "reply": "⏰😩📚", "revealed_k": 1, "reply_len": 3, "infilled": "💻💻", "masked_truth": "😩📚", "bag_f1": 0.0}

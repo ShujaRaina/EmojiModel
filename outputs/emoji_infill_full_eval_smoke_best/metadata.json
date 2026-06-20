@@ -1,0 +1,32 @@
+{
+  "name": "emoji_infill_full_eval_smoke_best",
+  "task": "emoji_reply_infill",
+  "created_utc": "2026-06-20",
+  "checkpoint": "outputs/emoji_phase2_infill_promptbag_h100_smoke/checkpoints/best.ckpt",
+  "source_data": "data/emoji_reply/emoji_reply.jsonl",
+  "excluded_data": "data/emoji_reply/benchmark.jsonl",
+  "split": {
+    "strategy": "prompt_bag",
+    "partition": "validation",
+    "validation_size": 0.1,
+    "seed": 42
+  },
+  "eval": {
+    "examples": 243,
+    "patterns": ["prefix", "suffix", "scattered"],
+    "samples_per_problem": 7,
+    "sampling_steps": 32,
+    "prediction_rows": 5103,
+    "semantic_table": "outputs/emoji_two_phase_h100_hard1/semantic_table.pt"
+  },
+  "files": {
+    "predictions": "predictions.jsonl",
+    "summary_csv": "summary_pass_power.csv",
+    "summary_markdown": "SUMMARY_PASS_POWER.md"
+  },
+  "primary_metrics": {
+    "semantic_target_cosine": "higher_is_better",
+    "semantic_embedding_distance": "lower_is_better",
+    "bag_f1": "higher_is_better"
+  }
+}

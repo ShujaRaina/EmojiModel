@@ -1,0 +1,1 @@
+{"model": "gpt55", "model_id": "openai/gpt-5.5", "benchmark_id": "emoji_reply_bench_00001_92265384", "sample_idx": 0, "generated_emoji": "📚💯🍀💪", "raw_prediction": "📚💯🍀💪", "finish_reason": "stop", "error": null}

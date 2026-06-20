@@ -1,0 +1,2 @@
+model,n,missing,benchmark_score,bag_f1,bag_precision,bag_recall,bag_jaccard,set_jaccard,length_score,exact_bag_match,exact_sequence_match,invalid_text_ratio
+gpt55_subagent,126,0,0.42017195767195775,0.4426114890400601,0.4761904761904762,0.433994708994709,0.30338246409674974,0.30338246409674974,0.7751322751322749,0.007936507936507936,0.0,0.0

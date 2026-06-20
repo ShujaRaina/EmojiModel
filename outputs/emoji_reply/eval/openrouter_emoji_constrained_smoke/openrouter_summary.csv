@@ -1,0 +1,2 @@
+model,problems,samples,first_benchmark_score,first_bag_f1,first_bag_jaccard,first_exact_bag_match,best7_benchmark_score,best7_bag_f1,best7_bag_jaccard,pass_at_7_exact_bag,permutation_stability,invalid_text_ratio
+gpt55,1,1,0.1,0.0,0.0,0.0,0.1,0.0,0.0,0.0,nan,0.0

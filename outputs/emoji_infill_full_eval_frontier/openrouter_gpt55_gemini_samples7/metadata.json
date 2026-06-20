@@ -1,0 +1,45 @@
+{
+  "name": "openrouter_gpt55_gemini_samples7",
+  "task": "emoji_reply_infill",
+  "created_utc": "2026-06-20",
+  "source_data": "data/emoji_reply/emoji_reply.jsonl",
+  "excluded_data": "data/emoji_reply/benchmark.jsonl",
+  "split": {
+    "strategy": "prompt_bag",
+    "partition": "validation",
+    "validation_size": 0.1,
+    "seed": 42
+  },
+  "eval": {
+    "examples": 243,
+    "patterns": ["prefix", "suffix", "scattered"],
+    "samples_per_problem": 7,
+    "models": [
+      {
+        "label": "gpt55",
+        "model_id": "openai/gpt-5.5"
+      },
+      {
+        "label": "gemini31_flash_lite",
+        "model_id": "google/gemini-3.1-flash-lite"
+      }
+    ],
+    "scored_rows": 10206,
+    "semantic_table": "outputs/emoji_two_phase_h100_hard1/semantic_table.pt"
+  },
+  "files": {
+    "raw": "openrouter_infill_raw.jsonl",
+    "scored": "openrouter_infill_scored.jsonl",
+    "gpt55_predictions": "gpt55_predictions.jsonl",
+    "gemini_predictions": "gemini31_flash_lite_predictions.jsonl",
+    "frontier_summary_csv": "summary_pass_power.csv",
+    "frontier_summary_markdown": "SUMMARY_PASS_POWER.md",
+    "comparison_summary_csv": "summary_vs_local_smoke.csv",
+    "comparison_summary_markdown": "SUMMARY_VS_LOCAL_SMOKE.md"
+  },
+  "primary_metrics": {
+    "semantic_target_cosine": "higher_is_better",
+    "semantic_embedding_distance": "lower_is_better",
+    "bag_f1": "higher_is_better"
+  }
+}

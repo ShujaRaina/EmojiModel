@@ -1,0 +1,258 @@
+{"instruction": "Honestly decaf for me tonight", "input": "☕🚫🌙", "output": "😌🫖☕", "topic": "coffee"}
+{"instruction": "Early night tonight", "input": "🌙😴", "output": "🥴😴🥱", "topic": "sleep"}
+{"instruction": "So hyped right now", "input": "🤩🔥", "output": "🚀🎉🥳⚡", "topic": "excited"}
+{"instruction": "Live band rocks", "input": "🎸🤘", "output": "💃🎵🎤🎶", "topic": "music"}
+{"instruction": "Honestly decaf for me tonight", "input": "☕🚫🌙", "output": "😋🍵🌅", "topic": "coffee"}
+{"instruction": "Flying out tomorrow", "input": "✈️🧳", "output": "🏕️🌍🏝️📸🗺️", "topic": "travel"}
+{"instruction": "I passed my exam", "input": "✅🎓🎉", "output": "🙌🏆🎁👏🤩", "topic": "celebration"}
+{"instruction": "Guys thunderstorm tonight", "input": "⛈️🌃", "output": "🌩️🌂🌫️☔🌦️", "topic": "rain"}
+{"instruction": "Wow you're my everything", "input": "💖🥰", "output": "❤️😻😍", "topic": "love"}
+{"instruction": "Horror movie night", "input": "🎬👻", "output": "😰🙀", "topic": "scared"}
+{"instruction": "Ok I lost someone dear", "input": "😢🕊️", "output": "😔🫂🌧️😭", "topic": "sad"}
+{"instruction": "Hey keep shining", "input": "✨🌟", "output": "🎉🥇🏆", "topic": "congrats"}
+{"instruction": "Omg forever thankful", "input": "🙏♾️", "output": "💛🌷🥹", "topic": "grateful"}
+{"instruction": "Hey goodnight everyone", "input": "🌙😴", "output": "🌜🛌🦉", "topic": "sleep"}
+{"instruction": "Hey city lights at night", "input": "🌃✨", "output": "🌌💤🕯️", "topic": "night"}
+{"instruction": "My heart belongs to you", "input": "💝❤️", "output": "😘🌹💝", "topic": "love"}
+{"instruction": "Hey sneezing nonstop", "input": "🤧", "output": "😷🌡️", "topic": "sick"}
+{"instruction": "Hey can't keep my eyes open", "input": "😴", "output": "🦉🛌😴", "topic": "sleep"}
+{"instruction": "Wow exploring a new city", "input": "🏙️🧭", "output": "🗺️🎒🏕️✈️", "topic": "travel"}
+{"instruction": "Ok I lost someone dear", "input": "😢🕊️", "output": "😞😟", "topic": "sad"}
+{"instruction": "Hey city lights at night", "input": "🌃✨", "output": "🌠🕯️🌛", "topic": "night"}
+{"instruction": "Omg forever thankful", "input": "🙏♾️", "output": "💐🙏😇✨👍", "topic": "grateful"}
+{"instruction": "Wow you're my everything", "input": "💖🥰", "output": "😘💕💖🌹", "topic": "love"}
+{"instruction": "Going on vacation", "input": "🏖️✈️", "output": "🧳🎒🗺️🚗🏔️", "topic": "travel"}
+{"instruction": "I passed my exam", "input": "✅🎓🎉", "output": "🥳✨🎊", "topic": "celebration"}
+{"instruction": "So hyped right now", "input": "🤩🔥", "output": "🤩🙌", "topic": "excited"}
+{"instruction": "I got the job", "input": "💼🎉", "output": "👏🙌", "topic": "celebration"}
+{"instruction": "Honestly working from home", "input": "🏠💻", "output": "💼📞😮‍💨📈⏳", "topic": "work"}
+{"instruction": "Wow good night", "input": "🌙😴", "output": "🦉🌙💤⭐🕯️", "topic": "night"}
+{"instruction": "Ugh this burger is amazing", "input": "🍔😋", "output": "🍩🍕🍗🍦🍣", "topic": "food"}
+{"instruction": "Wow exploring a new city", "input": "🏙️🧭", "output": "🚢🌍🛫🏝️🗺️", "topic": "travel"}
+{"instruction": "So hyped right now", "input": "🤩🔥", "output": "🙌🌟", "topic": "excited"}
+{"instruction": "Omg forever thankful", "input": "🙏♾️", "output": "🥹💐😊💛✨", "topic": "grateful"}
+{"instruction": "Packing my bags", "input": "🧳✈️", "output": "🏝️📸🎒🛫", "topic": "travel"}
+{"instruction": "Ugh we're champions", "input": "🏆🥇", "output": "⚽🏀🏅📣", "topic": "sports"}
+{"instruction": "Guys morning motivation", "input": "🌅💪", "output": "☀️🌄", "topic": "morning"}
+{"instruction": "Hey leave me alone", "input": "😠🚪", "output": "🤬😤🗯️", "topic": "angry"}
+{"instruction": "Guys I'm livid", "input": "🤬", "output": "🙄😡💢😠🔥", "topic": "angry"}
+{"instruction": "Honestly decaf for me tonight", "input": "☕🚫🌙", "output": "☕🥱✨", "topic": "coffee"}
+{"instruction": "I got the job", "input": "💼🎉", "output": "🥂🍾", "topic": "celebration"}
+{"instruction": "Running a fever", "input": "🤒🌡️", "output": "🛌🤢", "topic": "sick"}
+{"instruction": "Hey goodnight everyone", "input": "🌙😴", "output": "🌌🌜💤", "topic": "sleep"}
+{"instruction": "So hyped right now", "input": "🤩🔥", "output": "💥🥳😻🌟✨", "topic": "excited"}
+{"instruction": "Running a fever", "input": "🤒🌡️", "output": "🌡️🍵", "topic": "sick"}
+{"instruction": "Early night tonight", "input": "🌙😴", "output": "🌌🌜😴🦉", "topic": "sleep"}
+{"instruction": "Omg forever thankful", "input": "🙏♾️", "output": "🤗✨", "topic": "grateful"}
+{"instruction": "Game day", "input": "🏟️🎽", "output": "🏅⚽🔥", "topic": "sports"}
+{"instruction": "Early night tonight", "input": "🌙😴", "output": "⭐😴🥱😪", "topic": "sleep"}
+{"instruction": "Honestly working from home", "input": "🏠💻", "output": "📈🗓️😮‍💨", "topic": "work"}
+{"instruction": "Hey goodnight everyone", "input": "🌙😴", "output": "🛏️🥴🌌😴", "topic": "sleep"}
+{"instruction": "Grateful for you", "input": "🙏❤️", "output": "💐💛🙏", "topic": "grateful"}
+{"instruction": "Hey leave me alone", "input": "😠🚪", "output": "💢‼️", "topic": "angry"}
+{"instruction": "Guys time to study hard", "input": "📚💪", "output": "🖊️😩💻", "topic": "study"}
+{"instruction": "Guys building something cool", "input": "🛠️✨", "output": "✨🕹️🚀🤖⌨️", "topic": "tech"}
+{"instruction": "Guys time to study hard", "input": "📚💪", "output": "🤓📒", "topic": "study"}
+{"instruction": "Guys morning motivation", "input": "🌅💪", "output": "🌄🙂🐦", "topic": "morning"}
+{"instruction": "Ugh I'm so grateful", "input": "🙏❤️", "output": "🥹🌷👍", "topic": "grateful"}
+{"instruction": "Puddles everywhere", "input": "💧🌧️", "output": "🌧️🫧🌦️🌩️☔", "topic": "rain"}
+{"instruction": "My heart belongs to you", "input": "💝❤️", "output": "💕😍", "topic": "love"}
+{"instruction": "Wow good night", "input": "🌙😴", "output": "🌌🌃🌠🛌", "topic": "night"}
+{"instruction": "Guys morning everyone", "input": "🌅👋", "output": "✨🙂", "topic": "morning"}
+{"instruction": "Guys you mean everything to me", "input": "💖🥰", "output": "💘😍", "topic": "love"}
+{"instruction": "Going on vacation", "input": "🏖️✈️", "output": "🎒✈️📸🏝️🚗", "topic": "travel"}
+{"instruction": "So hyped right now", "input": "🤩🔥", "output": "🤩🥳", "topic": "excited"}
+{"instruction": "Wow good night", "input": "🌙😴", "output": "🌃🌌🕯️🌛🛌", "topic": "night"}
+{"instruction": "My heart belongs to you", "input": "💝❤️", "output": "💕💝💘💋😍", "topic": "love"}
+{"instruction": "Ugh I'm so grateful", "input": "🙏❤️", "output": "💯😊😇", "topic": "grateful"}
+{"instruction": "Hey keep shining", "input": "✨🌟", "output": "🎉🏆🥇", "topic": "congrats"}
+{"instruction": "Hey leave me alone", "input": "😠🚪", "output": "💢🤬", "topic": "angry"}
+{"instruction": "Flying out tomorrow", "input": "✈️🧳", "output": "🎒🗺️🏔️", "topic": "travel"}
+{"instruction": "Ok beach getaway booked", "input": "🏖️✈️", "output": "✈️🎒🏝️", "topic": "travel"}
+{"instruction": "Live band rocks", "input": "🎸🤘", "output": "🕺🎤🥁", "topic": "music"}
+{"instruction": "Honestly decaf for me tonight", "input": "☕🚫🌙", "output": "😋🌅✨🥱", "topic": "coffee"}
+{"instruction": "Guys I'm livid", "input": "🤬", "output": "😡😾🔥‼️", "topic": "angry"}
+{"instruction": "Running a fever", "input": "🤒🌡️", "output": "🤢🍵🤒💊", "topic": "sick"}
+{"instruction": "Guys you mean everything to me", "input": "💖🥰", "output": "💋💘💖", "topic": "love"}
+{"instruction": "Wow so tired today", "input": "😴😩", "output": "🥱🌙💤🌌", "topic": "sleep"}
+{"instruction": "Hey city lights at night", "input": "🌃✨", "output": "🌙🛌🕯️🌠🌃", "topic": "night"}
+{"instruction": "Guys building something cool", "input": "🛠️✨", "output": "🔌🤖💻✨", "topic": "tech"}
+{"instruction": "Ok I lost someone dear", "input": "😢🕊️", "output": "💧💔☹️🥺", "topic": "sad"}
+{"instruction": "Wow so tired today", "input": "😴😩", "output": "🥱😪⭐🦉🌜", "topic": "sleep"}
+{"instruction": "Hey sneezing nonstop", "input": "🤧", "output": "🌡️😣🤢🤧😷", "topic": "sick"}
+{"instruction": "Game day", "input": "🏟️🎽", "output": "⚽🏈🏅", "topic": "sports"}
+{"instruction": "Running a fever", "input": "🤒🌡️", "output": "🤢🤒🌡️", "topic": "sick"}
+{"instruction": "Hey sneezing nonstop", "input": "🤧", "output": "🥴🌡️", "topic": "sick"}
+{"instruction": "Flying out tomorrow", "input": "✈️🧳", "output": "🚢🏔️", "topic": "travel"}
+{"instruction": "Wow this is going to be epic", "input": "🤩🔥", "output": "🎉💥", "topic": "excited"}
+{"instruction": "Packing my bags", "input": "🧳✈️", "output": "🚢🏕️📸🚗🌍", "topic": "travel"}
+{"instruction": "Music is my therapy", "input": "🎶💆", "output": "🎺🎶🥁", "topic": "music"}
+{"instruction": "Wow exploring a new city", "input": "🏙️🧭", "output": "🌍🧳✈️🏔️🗺️", "topic": "travel"}
+{"instruction": "I passed my exam", "input": "✅🎓🎉", "output": "🙌👏🎊🎉🥳", "topic": "celebration"}
+{"instruction": "Puddles everywhere", "input": "💧🌧️", "output": "⚡🫧⛈️🌂🌫️", "topic": "rain"}
+{"instruction": "Wow this is going to be epic", "input": "🤩🔥", "output": "🚀🌟🎉🥳", "topic": "excited"}
+{"instruction": "Guys thunderstorm tonight", "input": "⛈️🌃", "output": "⛈️☔", "topic": "rain"}
+{"instruction": "Guys you mean everything to me", "input": "💖🥰", "output": "🥰💕💖😍", "topic": "love"}
+{"instruction": "Ugh we're champions", "input": "🏆🥇", "output": "🏅🥅", "topic": "sports"}
+{"instruction": "Guys morning motivation", "input": "🌅💪", "output": "🐦☕", "topic": "morning"}
+{"instruction": "Wow exploring a new city", "input": "🏙️🧭", "output": "✈️🚗🌍🏝️", "topic": "travel"}
+{"instruction": "Game day", "input": "🏟️🎽", "output": "🎽🥅🙌", "topic": "sports"}
+{"instruction": "Guys morning everyone", "input": "🌅👋", "output": "☀️🌻💪☕🌅", "topic": "morning"}
+{"instruction": "Game day", "input": "🏟️🎽", "output": "🔥🥅📣🎾⚾", "topic": "sports"}
+{"instruction": "Guys you mean everything to me", "input": "💖🥰", "output": "💖💞😘❤️", "topic": "love"}
+{"instruction": "Ok I lost someone dear", "input": "😢🕊️", "output": "😢😟💔", "topic": "sad"}
+{"instruction": "Ugh I'm so grateful", "input": "🙏❤️", "output": "🤗🌷😊👍😇", "topic": "grateful"}
+{"instruction": "Live band rocks", "input": "🎸🤘", "output": "🎵🥁🔊", "topic": "music"}
+{"instruction": "Guys thunderstorm tonight", "input": "⛈️🌃", "output": "☔☁️⛈️🏠🌂", "topic": "rain"}
+{"instruction": "Going on vacation", "input": "🏖️✈️", "output": "🏕️🏝️🛫🗺️", "topic": "travel"}
+{"instruction": "Hey thanks for everything", "input": "🙏❤️", "output": "🌷💛", "topic": "grateful"}
+{"instruction": "Hey goodnight everyone", "input": "🌙😴", "output": "🥴🌙🦉", "topic": "sleep"}
+{"instruction": "Flying out tomorrow", "input": "✈️🧳", "output": "🛫🚗🏔️", "topic": "travel"}
+{"instruction": "Ugh I'm so grateful", "input": "🙏❤️", "output": "🥹💯😊🌷🫶", "topic": "grateful"}
+{"instruction": "Ok I lost someone dear", "input": "😢🕊️", "output": "😭😿😟", "topic": "sad"}
+{"instruction": "Omg forever thankful", "input": "🙏♾️", "output": "🙏✨😊🌷👍", "topic": "grateful"}
+{"instruction": "Live band rocks", "input": "🎸🤘", "output": "🥁🔊", "topic": "music"}
+{"instruction": "Going on vacation", "input": "🏖️✈️", "output": "🏕️✈️🎒🚢🛫", "topic": "travel"}
+{"instruction": "Guys I'm livid", "input": "🤬", "output": "‼️💥😠", "topic": "angry"}
+{"instruction": "Wow you're my everything", "input": "💖🥰", "output": "💘😍💞", "topic": "love"}
+{"instruction": "Guys thunderstorm tonight", "input": "⛈️🌃", "output": "🌩️🌂", "topic": "rain"}
+{"instruction": "Puddles everywhere", "input": "💧🌧️", "output": "🌂🌫️", "topic": "rain"}
+{"instruction": "Early night tonight", "input": "🌙😴", "output": "🛏️⭐", "topic": "sleep"}
+{"instruction": "Guys bundle up it's freezing", "input": "🧥🥶", "output": "☃️⛷️🔥", "topic": "weather_cold"}
+{"instruction": "Hey thanks for everything", "input": "🙏❤️", "output": "😇💯✨😊👍", "topic": "grateful"}
+{"instruction": "Running a fever", "input": "🤒🌡️", "output": "🤒😷🥴", "topic": "sick"}
+{"instruction": "Guys building something cool", "input": "🛠️✨", "output": "🤖✨", "topic": "tech"}
+{"instruction": "Honestly decaf for me tonight", "input": "☕🚫🌙", "output": "🌞🥱💛🍵🌅", "topic": "coffee"}
+{"instruction": "Music is my therapy", "input": "🎶💆", "output": "🎷🎹", "topic": "music"}
+{"instruction": "Wow good night", "input": "🌙😴", "output": "💤🛌🌙🌠", "topic": "night"}
+{"instruction": "I got the job", "input": "💼🎉", "output": "🍾🙌✨", "topic": "celebration"}
+{"instruction": "Ugh this burger is amazing", "input": "🍔😋", "output": "😋🌮🍟🍝🍗", "topic": "food"}
+{"instruction": "Ugh this burger is amazing", "input": "🍔😋", "output": "🍟🍝🍣🍩🍕", "topic": "food"}
+{"instruction": "Guys building something cool", "input": "🛠️✨", "output": "🔌🛠️💻✨", "topic": "tech"}
+{"instruction": "Running a fever", "input": "🤒🌡️", "output": "😣🍵💊", "topic": "sick"}
+{"instruction": "Hey city lights at night", "input": "🌃✨", "output": "🌛🌙🌃", "topic": "night"}
+{"instruction": "Grateful for you", "input": "🙏❤️", "output": "🙏👍", "topic": "grateful"}
+{"instruction": "Guys you mean everything to me", "input": "💖🥰", "output": "😻😍💘🌹😘", "topic": "love"}
+{"instruction": "Wow so tired today", "input": "😴😩", "output": "🌜😪⭐", "topic": "sleep"}
+{"instruction": "Horror movie night", "input": "🎬👻", "output": "😨🙀", "topic": "scared"}
+{"instruction": "Horror movie night", "input": "🎬👻", "output": "😨🦇😖💀🫣", "topic": "scared"}
+{"instruction": "Hey leave me alone", "input": "😠🚪", "output": "🔥😤😠🤬", "topic": "angry"}
+{"instruction": "My heart belongs to you", "input": "💝❤️", "output": "🌹💘", "topic": "love"}
+{"instruction": "Hey thanks for everything", "input": "🙏❤️", "output": "💯🫶🌷😊", "topic": "grateful"}
+{"instruction": "Ugh this burger is amazing", "input": "🍔😋", "output": "🍔🍩", "topic": "food"}
+{"instruction": "Music is my therapy", "input": "🎶💆", "output": "🎵🔊", "topic": "music"}
+{"instruction": "Hey keep shining", "input": "✨🌟", "output": "🎉🙌👍🤩", "topic": "congrats"}
+{"instruction": "Ok beach getaway booked", "input": "🏖️✈️", "output": "🗺️🚢🎒📸", "topic": "travel"}
+{"instruction": "Wow this is going to be epic", "input": "🤩🔥", "output": "🚀😻", "topic": "excited"}
+{"instruction": "I passed my exam", "input": "✅🎓🎉", "output": "👏🎊🎈✨🎉", "topic": "celebration"}
+{"instruction": "Hey goodnight everyone", "input": "🌙😴", "output": "🌌🌜🦉🌙🥱", "topic": "sleep"}
+{"instruction": "Ugh this burger is amazing", "input": "🍔😋", "output": "🍟🍩🤤", "topic": "food"}
+{"instruction": "Flying out tomorrow", "input": "✈️🧳", "output": "🌍🎒🛫🏝️✈️", "topic": "travel"}
+{"instruction": "Hey sneezing nonstop", "input": "🤧", "output": "🛌💊", "topic": "sick"}
+{"instruction": "Guys you mean everything to me", "input": "💖🥰", "output": "💕💝💞😘❤️", "topic": "love"}
+{"instruction": "Ugh I'm so grateful", "input": "🙏❤️", "output": "💛💯✨🥹", "topic": "grateful"}
+{"instruction": "Ugh we're champions", "input": "🏆🥇", "output": "🎽🥅", "topic": "sports"}
+{"instruction": "Packing my bags", "input": "🧳✈️", "output": "🌍🚗🏕️🗺️🛫", "topic": "travel"}
+{"instruction": "Ok beach getaway booked", "input": "🏖️✈️", "output": "🏔️🧳🚗🏕️📸", "topic": "travel"}
+{"instruction": "Ugh this burger is amazing", "input": "🍔😋", "output": "🍰🍦🍝🍕", "topic": "food"}
+{"instruction": "Ugh we're champions", "input": "🏆🥇", "output": "🏈🙌🎽", "topic": "sports"}
+{"instruction": "Hey city lights at night", "input": "🌃✨", "output": "🌙💤", "topic": "night"}
+{"instruction": "Hey sneezing nonstop", "input": "🤧", "output": "🤧🤒🥴🍵🌡️", "topic": "sick"}
+{"instruction": "Guys thunderstorm tonight", "input": "⛈️🌃", "output": "🌂⛈️🌦️☁️", "topic": "rain"}
+{"instruction": "Ugh I'm so grateful", "input": "🙏❤️", "output": "✨🙏😇💐", "topic": "grateful"}
+{"instruction": "Early night tonight", "input": "🌙😴", "output": "💤🛏️😪😴🥴", "topic": "sleep"}
+{"instruction": "Hey thanks for everything", "input": "🙏❤️", "output": "🙏🥹", "topic": "grateful"}
+{"instruction": "Hey can't keep my eyes open", "input": "😴", "output": "🌙🥴🌌🛌", "topic": "sleep"}
+{"instruction": "Wow so tired today", "input": "😴😩", "output": "🌜😪🦉🛏️", "topic": "sleep"}
+{"instruction": "Guys morning motivation", "input": "🌅💪", "output": "🌅🙂☕🌞", "topic": "morning"}
+{"instruction": "Going on vacation", "input": "🏖️✈️", "output": "✈️🎒🚗", "topic": "travel"}
+{"instruction": "Omg forever thankful", "input": "🙏♾️", "output": "🥹💐", "topic": "grateful"}
+{"instruction": "Guys time to study hard", "input": "📚💪", "output": "☕⏰📖😩", "topic": "study"}
+{"instruction": "Hey can't keep my eyes open", "input": "😴", "output": "⭐💤😴🦉🌜", "topic": "sleep"}
+{"instruction": "Wow exploring a new city", "input": "🏙️🧭", "output": "🏝️🎒🚢🗺️", "topic": "travel"}
+{"instruction": "Grateful for you", "input": "🙏❤️", "output": "🌷🫶😇😊🤗", "topic": "grateful"}
+{"instruction": "Grateful for you", "input": "🙏❤️", "output": "💐💛😇🤗👍", "topic": "grateful"}
+{"instruction": "Puddles everywhere", "input": "💧🌧️", "output": "🌂☔💧⚡", "topic": "rain"}
+{"instruction": "Guys time to study hard", "input": "📚💪", "output": "📖📝", "topic": "study"}
+{"instruction": "Honestly working from home", "input": "🏠💻", "output": "💼📈🖥️📞📧", "topic": "work"}
+{"instruction": "Guys morning everyone", "input": "🌅👋", "output": "🐦💪", "topic": "morning"}
+{"instruction": "Going on vacation", "input": "🏖️✈️", "output": "🌍📸", "topic": "travel"}
+{"instruction": "Wow exploring a new city", "input": "🏙️🧭", "output": "🏕️📸🎒", "topic": "travel"}
+{"instruction": "Music is my therapy", "input": "🎶💆", "output": "🎤🥁", "topic": "music"}
+{"instruction": "Horror movie night", "input": "🎬👻", "output": "🌑😳💀😨", "topic": "scared"}
+{"instruction": "Hey thanks for everything", "input": "🙏❤️", "output": "😇💐🤗🫶", "topic": "grateful"}
+{"instruction": "Puddles everywhere", "input": "💧🌧️", "output": "🫧🌩️💧⛈️🌧️", "topic": "rain"}
+{"instruction": "Ok I lost someone dear", "input": "😢🕊️", "output": "☹️💧😿🥺😭", "topic": "sad"}
+{"instruction": "Guys thunderstorm tonight", "input": "⛈️🌃", "output": "🏠☔🌫️⚡🫧", "topic": "rain"}
+{"instruction": "Guys I'm livid", "input": "🤬", "output": "‼️🤬", "topic": "angry"}
+{"instruction": "Hey can't keep my eyes open", "input": "😴", "output": "🌙🌌💤😪", "topic": "sleep"}
+{"instruction": "Wow good night", "input": "🌙😴", "output": "⭐💤🛌", "topic": "night"}
+{"instruction": "So hyped right now", "input": "🤩🔥", "output": "🌟🚀🥳✨", "topic": "excited"}
+{"instruction": "I got the job", "input": "💼🎉", "output": "🙌🎈🏆👏✨", "topic": "celebration"}
+{"instruction": "Guys morning motivation", "input": "🌅💪", "output": "🥞🌞🐦", "topic": "morning"}
+{"instruction": "Guys bundle up it's freezing", "input": "🧥🥶", "output": "❄️⛄🔥🧣", "topic": "weather_cold"}
+{"instruction": "Guys time to study hard", "input": "📚💪", "output": "🤓☕🖊️⏰", "topic": "study"}
+{"instruction": "Ok beach getaway booked", "input": "🏖️✈️", "output": "🚗🎒📸", "topic": "travel"}
+{"instruction": "Guys bundle up it's freezing", "input": "🧥🥶", "output": "☃️🏂", "topic": "weather_cold"}
+{"instruction": "Ugh we're champions", "input": "🏆🥇", "output": "🏅🏈⚽📣🏆", "topic": "sports"}
+{"instruction": "Honestly working from home", "input": "🏠💻", "output": "📈💻⏳😮‍💨💼", "topic": "work"}
+{"instruction": "Hey keep shining", "input": "✨🌟", "output": "🙌💪🤩👍", "topic": "congrats"}
+{"instruction": "Game day", "input": "🏟️🎽", "output": "🔥🎽🎾🏅⚾", "topic": "sports"}
+{"instruction": "Ok beach getaway booked", "input": "🏖️✈️", "output": "🏔️🌍🧳🏕️🗺️", "topic": "travel"}
+{"instruction": "Ugh we're champions", "input": "🏆🥇", "output": "🏀⚾🎽", "topic": "sports"}
+{"instruction": "Hey thanks for everything", "input": "🙏❤️", "output": "🤗💯🌷😇", "topic": "grateful"}
+{"instruction": "Grateful for you", "input": "🙏❤️", "output": "😇🫶🤗💐", "topic": "grateful"}
+{"instruction": "Guys building something cool", "input": "🛠️✨", "output": "👾💻🛠️", "topic": "tech"}
+{"instruction": "Guys morning everyone", "input": "🌅👋", "output": "🌻☀️", "topic": "morning"}
+{"instruction": "Horror movie night", "input": "🎬👻", "output": "🫣😰💀👻", "topic": "scared"}
+{"instruction": "Packing my bags", "input": "🧳✈️", "output": "🏝️📸🗺️", "topic": "travel"}
+{"instruction": "Wow you're my everything", "input": "💖🥰", "output": "💘🌹", "topic": "love"}
+{"instruction": "Flying out tomorrow", "input": "✈️🧳", "output": "🛫🏕️🏝️🚢", "topic": "travel"}
+{"instruction": "Grateful for you", "input": "🙏❤️", "output": "🤗✨🫶", "topic": "grateful"}
+{"instruction": "Guys bundle up it's freezing", "input": "🧥🥶", "output": "🥶🧥🏂🔥⛄", "topic": "weather_cold"}
+{"instruction": "My heart belongs to you", "input": "💝❤️", "output": "💖😍", "topic": "love"}
+{"instruction": "Game day", "input": "🏟️🎽", "output": "🏈🙌", "topic": "sports"}
+{"instruction": "Horror movie night", "input": "🎬👻", "output": "🕷️🦇😱🙀", "topic": "scared"}
+{"instruction": "Music is my therapy", "input": "🎶💆", "output": "🎶🎹🎧🕺", "topic": "music"}
+{"instruction": "Hey keep shining", "input": "✨🌟", "output": "🙌🥇", "topic": "congrats"}
+{"instruction": "Hey city lights at night", "input": "🌃✨", "output": "🌛🌠⭐", "topic": "night"}
+{"instruction": "Hey goodnight everyone", "input": "🌙😴", "output": "🌙💤😪", "topic": "sleep"}
+{"instruction": "Honestly working from home", "input": "🏠💻", "output": "💻💼✅📊", "topic": "work"}
+{"instruction": "Wow you're my everything", "input": "💖🥰", "output": "😍💞💋", "topic": "love"}
+{"instruction": "Guys I'm livid", "input": "🤬", "output": "🤬😠😾👿💥", "topic": "angry"}
+{"instruction": "Wow this is going to be epic", "input": "🤩🔥", "output": "💥🚀✨🤩😆", "topic": "excited"}
+{"instruction": "I got the job", "input": "💼🎉", "output": "🎁🎉🤩🙌✨", "topic": "celebration"}
+{"instruction": "Hey leave me alone", "input": "😠🚪", "output": "💥🗯️🙄", "topic": "angry"}
+{"instruction": "Guys time to study hard", "input": "📚💪", "output": "🖊️📖💻", "topic": "study"}
+{"instruction": "Wow so tired today", "input": "😴😩", "output": "🌌😴", "topic": "sleep"}
+{"instruction": "Live band rocks", "input": "🎸🤘", "output": "🎤💃🎵🔊", "topic": "music"}
+{"instruction": "I got the job", "input": "💼🎉", "output": "🙌🥂🎈✨🤩", "topic": "celebration"}
+{"instruction": "Music is my therapy", "input": "🎶💆", "output": "🎺🔊🎵🎶🎧", "topic": "music"}
+{"instruction": "Honestly working from home", "input": "🏠💻", "output": "🖥️✅", "topic": "work"}
+{"instruction": "Guys morning everyone", "input": "🌅👋", "output": "💪✨🌄☀️🌞", "topic": "morning"}
+{"instruction": "My heart belongs to you", "input": "💝❤️", "output": "😻🥰💞", "topic": "love"}
+{"instruction": "Hey leave me alone", "input": "😠🚪", "output": "😾🙄", "topic": "angry"}
+{"instruction": "Guys I'm livid", "input": "🤬", "output": "🤬😤", "topic": "angry"}
+{"instruction": "Wow good night", "input": "🌙😴", "output": "🕯️🌙✨💤", "topic": "night"}
+{"instruction": "Hey can't keep my eyes open", "input": "😴", "output": "🌜🌙", "topic": "sleep"}
+{"instruction": "Wow so tired today", "input": "😴😩", "output": "🌜🛌", "topic": "sleep"}
+{"instruction": "Hey can't keep my eyes open", "input": "😴", "output": "🌌🌜🥱😴😪", "topic": "sleep"}
+{"instruction": "Guys morning motivation", "input": "🌅💪", "output": "🌄🥞🐦☕", "topic": "morning"}
+{"instruction": "Packing my bags", "input": "🧳✈️", "output": "🧳🚢🏝️", "topic": "travel"}
+{"instruction": "Hey keep shining", "input": "✨🌟", "output": "👏🎓🥇", "topic": "congrats"}
+{"instruction": "Wow this is going to be epic", "input": "🤩🔥", "output": "😻🎉😆🙌", "topic": "excited"}
+{"instruction": "I passed my exam", "input": "✅🎓🎉", "output": "✨🎁🥳", "topic": "celebration"}
+{"instruction": "I passed my exam", "input": "✅🎓🎉", "output": "🏆🎈🤩🥂✨", "topic": "celebration"}
+{"instruction": "Wow this is going to be epic", "input": "🤩🔥", "output": "😆🤩", "topic": "excited"}
+{"instruction": "Guys morning everyone", "input": "🌅👋", "output": "🌻☕☀️🌄", "topic": "morning"}
+{"instruction": "Guys bundle up it's freezing", "input": "🧥🥶", "output": "☃️❄️🧤🌨️⛷️", "topic": "weather_cold"}
+{"instruction": "Guys building something cool", "input": "🛠️✨", "output": "⌨️💻🤖🕹️📱", "topic": "tech"}
+{"instruction": "Live band rocks", "input": "🎸🤘", "output": "🕺🎤🥁🎧🎺", "topic": "music"}
+{"instruction": "Early night tonight", "input": "🌙😴", "output": "⭐🌌😪🥱🛏️", "topic": "sleep"}
+{"instruction": "Packing my bags", "input": "🧳✈️", "output": "🧳🏝️", "topic": "travel"}
+{"instruction": "Honestly decaf for me tonight", "input": "☕🚫🌙", "output": "😋💛", "topic": "coffee"}
+{"instruction": "Guys bundle up it's freezing", "input": "🧥🥶", "output": "🔥🥶⛄⛷️", "topic": "weather_cold"}
+{"instruction": "Wow you're my everything", "input": "💖🥰", "output": "💞💋❤️", "topic": "love"}
+{"instruction": "Hey sneezing nonstop", "input": "🤧", "output": "🤧💊🤒🤢🥴", "topic": "sick"}
+{"instruction": "Puddles everywhere", "input": "💧🌧️", "output": "⛈️🌩️🌫️🌂", "topic": "rain"}
+{"instruction": "Ok beach getaway booked", "input": "🏖️✈️", "output": "🌍🚗🏔️🎒", "topic": "travel"}

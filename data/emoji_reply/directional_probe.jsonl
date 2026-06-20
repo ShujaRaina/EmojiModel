@@ -1,0 +1,24 @@
+{"instruction": "arrows opposing", "input": "➡️⬅️", "output": "↔️", "topic": "arrows"}
+{"instruction": "arrows vertical", "input": "⬆️⬇️", "output": "↕️", "topic": "arrows"}
+{"instruction": "diagonal arrows", "input": "↗️↘️", "output": "🔀", "topic": "arrows"}
+{"instruction": "all one direction", "input": "➡️➡️➡️", "output": "🏁", "topic": "arrows"}
+{"instruction": "rotate arrows", "input": "⬆️➡️⬇️", "output": "🔁", "topic": "arrows"}
+{"instruction": "cat chases mouse", "input": "🐈🐁", "output": "💨", "topic": "chase"}
+{"instruction": "dog chases cat", "input": "🐕🐈", "output": "💨", "topic": "chase"}
+{"instruction": "shark and fish", "input": "🦈🐟", "output": "💨", "topic": "chase"}
+{"instruction": "snake and mouse", "input": "🐍🐁", "output": "💨", "topic": "chase"}
+{"instruction": "wolf and sheep", "input": "🐺🐑", "output": "💨", "topic": "chase"}
+{"instruction": "eagle and snake", "input": "🦅🐍", "output": "💨", "topic": "chase"}
+{"instruction": "police chases car", "input": "🚓🚗", "output": "💨", "topic": "chase"}
+{"instruction": "person and dog", "input": "🏃🐕", "output": "💨", "topic": "chase"}
+{"instruction": "egg to chicken", "input": "🥚🐣🐔", "output": "➡️", "topic": "progression"}
+{"instruction": "caterpillar to butterfly", "input": "🐛🦋", "output": "➡️", "topic": "progression"}
+{"instruction": "seed to tree", "input": "🌱🌳", "output": "➡️", "topic": "progression"}
+{"instruction": "new moon to full", "input": "🌑🌕", "output": "➡️", "topic": "progression"}
+{"instruction": "tadpole to frog", "input": "🐸🐸", "output": "➡️", "topic": "progression"}
+{"instruction": "counting up", "input": "1️⃣2️⃣3️⃣", "output": "🔢", "topic": "sequence"}
+{"instruction": "traffic light", "input": "🔴🟡🟢", "output": "🚦", "topic": "sequence"}
+{"instruction": "rocket to moon", "input": "🚀🌕", "output": "✨", "topic": "sequence"}
+{"instruction": "rising then falling", "input": "📈📉", "output": "📊", "topic": "sequence"}
+{"instruction": "sunrise to sunset", "input": "🌅🌇", "output": "➡️", "topic": "progression"}
+{"instruction": "start to finish", "input": "🏁🏆", "output": "➡️", "topic": "sequence"}
