@@ -21,10 +21,11 @@ import utils
 
 LOGGER = utils.get_logger(__name__)
 
-try:
-  import regex
-except ImportError:  # pragma: no cover - only hit in incomplete envs.
-  regex = None
+from emoji_tokenization import (
+  extract_emoji_graphemes,
+  is_emoji_grapheme,
+  split_graphemes,
+)
 
 
 ATOMIC_EMOJI_SPECIAL_TOKENS = [
@@ -48,33 +49,6 @@ COMMON_EMOJI_ALLOWLIST = [
   '🏫', '💼', '⏰', '✅', '❌', '⚠️', '🚨', '❓', '❗', '➡️',
   '⬅️', '⬆️', '⬇️', '🇺🇸', '🏳️‍🌈', '👨‍👩‍👧‍👦', '👋', '🤝',
 ]
-
-
-def _require_regex():
-  if regex is None:
-    raise ImportError(
-      'Atomic emoji tokenization requires the `regex` package. '
-      'Install project requirements or run `pip install regex`.')
-
-
-def split_graphemes(text):
-  _require_regex()
-  return regex.findall(r'\X', text or '')
-
-
-def is_emoji_grapheme(grapheme):
-  _require_regex()
-  if not grapheme or grapheme.isspace():
-    return False
-  return bool(
-    regex.search(r'\p{Extended_Pictographic}', grapheme)
-    or regex.search(r'\p{Regional_Indicator}', grapheme)
-    or '\u20e3' in grapheme
-    or any('\U000E0020' <= ch <= '\U000E007F' for ch in grapheme))
-
-
-def extract_emoji_graphemes(text):
-  return [g for g in split_graphemes(text) if is_emoji_grapheme(g)]
 
 
 def wt_detokenizer(string):

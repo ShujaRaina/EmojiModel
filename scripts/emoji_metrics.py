@@ -1,5 +1,4 @@
 """Shared metrics for emoji reply benchmark evaluation."""
-import collections
 import math
 import os
 import sys
@@ -7,35 +6,18 @@ import sys
 sys.path.insert(0, os.path.dirname(
   os.path.dirname(os.path.abspath(__file__))))
 
-import dataloader
-
-
-def emoji_tokens(text):
-  return dataloader.extract_emoji_graphemes(text or '')
+# Segmentation and multiset overlap live in emoji_tokenization so that the
+# frontier evals under eval/ score with identical code without needing torch.
+from emoji_tokenization import (
+  bag_jaccard,
+  bag_overlap as _bag_overlap,
+  emoji_bag,
+  extract_emoji_graphemes as emoji_tokens,
+)
 
 
 def emoji_text(text):
   return ''.join(emoji_tokens(text))
-
-
-def emoji_bag(text):
-  return collections.Counter(emoji_tokens(text))
-
-
-def _bag_overlap(pred_bag, target_bag):
-  keys = set(pred_bag) | set(target_bag)
-  return sum(min(pred_bag[k], target_bag[k]) for k in keys)
-
-
-def bag_jaccard(prediction, target):
-  """Multiset Jaccard: overlap divided by multiset union."""
-  pred_bag = emoji_bag(prediction)
-  target_bag = emoji_bag(target)
-  if not pred_bag and not target_bag:
-    return 1.0
-  keys = set(pred_bag) | set(target_bag)
-  union = sum(max(pred_bag[k], target_bag[k]) for k in keys)
-  return _bag_overlap(pred_bag, target_bag) / union if union else 0.0
 
 
 def set_jaccard(prediction, target):
