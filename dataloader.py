@@ -852,10 +852,21 @@ def _tokenize_text2emoji(example, tokenizer, block_size, eot=None,
           'cond_mask': cond_batch}
 
 
+def _usable_cpu_count():
+  # os.sched_getaffinity is Linux-only; macOS needs os.cpu_count(). This is a
+  # default argument, so on macOS the AttributeError fired at import time and
+  # made the whole module unimportable.
+  if hasattr(os, 'sched_getaffinity'):
+    return len(os.sched_getaffinity(0))
+  return os.cpu_count() or 1
+
+
 def get_dataset(
     dataset_name, tokenizer, wrap, mode, cache_dir,
-    block_size=1024, num_proc=len(os.sched_getaffinity(0)), streaming=False,
+    block_size=1024, num_proc=None, streaming=False,
     data_config=None):
+  if num_proc is None:
+    num_proc = _usable_cpu_count()
   data_config = data_config or {}
   tokenizer_tag = 'atomic_emoji' if isinstance(
     tokenizer, AtomicEmojiTokenizer) else re.sub(
