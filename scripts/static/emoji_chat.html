@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Emoji Diffusion Model</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  --bg:#0c0e14; --panel:#151823; --panel2:#1b1f2e; --ink:#e8ecf4; --mut:#9aa3b8;
+  --acc:#7c8cff; --acc-ink:#0a0c12; --good:#3ddc97; --warn:#ffb454; --bad:#ff6b81;
+  --line:#262b3a; --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+  display:flex; align-items:center; justify-content:center; padding:24px;
+}
+.app{
+  width:min(880px,100%); height:min(860px,100%);
+  background:var(--panel); border:1px solid var(--line); border-radius:20px;
+  display:flex; flex-direction:column; overflow:hidden;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+}
+
+/* ---------- header ---------- */
+header{
+  padding:18px 22px; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:14px; flex:0 0 auto;
+}
+header .title{flex:1; min-width:0}
+h1{margin:0; font-size:1.25rem; letter-spacing:-.02em; white-space:nowrap}
+h1 .spin{display:inline-block; margin-right:.4rem}
+.sub{margin:.2rem 0 0; color:var(--mut); font-size:.8rem}
+.status{
+  display:flex; align-items:center; gap:.45rem; font-size:.78rem; color:var(--mut);
+  background:var(--panel2); border:1px solid var(--line); border-radius:999px;
+  padding:.35rem .7rem; white-space:nowrap;
+}
+.dot{width:8px; height:8px; border-radius:50%; background:var(--mut); flex:0 0 auto}
+.dot.ok{background:var(--good); box-shadow:0 0 8px var(--good)}
+.dot.mock{background:var(--warn); box-shadow:0 0 8px var(--warn)}
+.dot.err{background:var(--bad)}
+
+/* ---------- chat log ---------- */
+#log{
+  flex:1 1 auto; overflow-y:auto; padding:22px; display:flex;
+  flex-direction:column; gap:14px; scroll-behavior:smooth;
+}
+#log::-webkit-scrollbar{width:10px}
+#log::-webkit-scrollbar-thumb{background:var(--line); border-radius:99px}
+
+.msg{display:flex; flex-direction:column; max-width:78%; gap:.35rem}
+.msg.user{align-self:flex-end; align-items:flex-end}
+.msg.bot{align-self:flex-start; align-items:flex-start}
+.bubble{
+  padding:.7rem 1rem; border-radius:var(--radius); font-size:2rem; line-height:1.3;
+  letter-spacing:.06em; word-break:break-word;
+}
+.msg.user .bubble{background:var(--acc); color:var(--acc-ink); border-bottom-right-radius:5px}
+.msg.bot .bubble{background:var(--panel2); border:1px solid var(--line); border-bottom-left-radius:5px}
+.msg.bot .bubble.empty{font-size:.95rem; color:var(--mut); letter-spacing:0}
+.meta{font-size:.7rem; color:var(--mut); display:flex; gap:.6rem; align-items:center}
+.meta button{
+  background:none; border:0; color:var(--mut); cursor:pointer; padding:0;
+  font-size:.7rem; text-decoration:underline dotted; font-family:inherit;
+}
+.meta button:hover{color:var(--acc)}
+
+.empty-state{
+  margin:auto; text-align:center; color:var(--mut); max-width:420px;
+}
+.empty-state .big{font-size:2.6rem; letter-spacing:.15em}
+.empty-state p{font-size:.9rem; line-height:1.6; margin:.8rem 0 0}
+
+.typing{display:flex; gap:5px; padding:.95rem 1rem}
+.typing i{
+  width:8px; height:8px; border-radius:50%; background:var(--mut);
+  animation:blink 1.3s infinite ease-in-out;
+}
+.typing i:nth-child(2){animation-delay:.18s}
+.typing i:nth-child(3){animation-delay:.36s}
+@keyframes blink{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+
+/* ---------- composer ---------- */
+.composer{flex:0 0 auto; border-top:1px solid var(--line); padding:14px 16px; background:var(--panel)}
+.row{display:flex; gap:.55rem; align-items:center}
+.iconbtn{
+  flex:0 0 auto; width:46px; height:46px; border-radius:12px; cursor:pointer;
+  background:var(--panel2); border:1px solid var(--line); color:var(--ink);
+  font-size:1.35rem; line-height:1; display:grid; place-items:center;
+}
+.iconbtn:hover{border-color:var(--acc)}
+.iconbtn[aria-expanded="true"]{border-color:var(--acc); background:#232840}
+#input{
+  flex:1 1 auto; min-width:0; height:46px; font-size:1.5rem; padding:0 .85rem;
+  border-radius:12px; border:1px solid var(--line); background:#0a0c12;
+  color:var(--ink); outline:none; font-family:inherit;
+}
+#input::placeholder{color:#556; font-size:1.15rem}
+#input:focus{border-color:var(--acc)}
+#send{
+  flex:0 0 auto; height:46px; padding:0 1.5rem; border:0; border-radius:12px;
+  background:var(--acc); color:var(--acc-ink); font-weight:650; font-size:.98rem;
+  cursor:pointer; font-family:inherit;
+}
+#send:disabled{opacity:.45; cursor:not-allowed}
+.controls{
+  display:flex; align-items:center; gap:1rem; margin-top:.7rem;
+  font-size:.74rem; color:var(--mut); flex-wrap:wrap;
+}
+.controls label{display:flex; align-items:center; gap:.45rem}
+.controls input[type=range]{width:110px; accent-color:var(--acc)}
+.hint{margin-left:auto}
+kbd{
+  background:var(--panel2); border:1px solid var(--line); border-bottom-width:2px;
+  border-radius:5px; padding:.05rem .35rem; font-size:.68rem; font-family:inherit;
+}
+
+/* ---------- emoji picker ---------- */
+#picker{
+  display:none; border-top:1px solid var(--line); background:var(--panel2);
+  flex:0 0 auto; flex-direction:column; max-height:300px;
+}
+#picker.open{display:flex}
+.picker-top{display:flex; gap:.5rem; padding:10px 12px; border-bottom:1px solid var(--line)}
+#search{
+  flex:1; height:34px; border-radius:9px; border:1px solid var(--line);
+  background:#0a0c12; color:var(--ink); padding:0 .7rem; outline:none;
+  font-size:.85rem; font-family:inherit;
+}
+#search:focus{border-color:var(--acc)}
+.tabs{display:flex; gap:.3rem; overflow-x:auto; padding:8px 12px 0; flex:0 0 auto}
+.tabs::-webkit-scrollbar{height:0}
+.tab{
+  border:1px solid var(--line); background:transparent; color:var(--mut);
+  border-radius:999px; padding:.28rem .7rem; font-size:.75rem; cursor:pointer;
+  white-space:nowrap; font-family:inherit;
+}
+.tab:hover{color:var(--ink)}
+.tab.active{background:var(--acc); color:var(--acc-ink); border-color:var(--acc); font-weight:600}
+#grid{
+  overflow-y:auto; padding:10px 12px 14px; display:grid; gap:2px;
+  grid-template-columns:repeat(auto-fill,minmax(42px,1fr)); align-content:start;
+}
+#grid::-webkit-scrollbar{width:10px}
+#grid::-webkit-scrollbar-thumb{background:var(--line); border-radius:99px}
+.em{
+  aspect-ratio:1; border:0; background:none; cursor:pointer; border-radius:9px;
+  font-size:1.5rem; line-height:1; display:grid; place-items:center; padding:0;
+}
+.em:hover{background:#2c3350; transform:scale(1.12)}
+.em:active{transform:scale(.95)}
+.picker-none{grid-column:1/-1; color:var(--mut); font-size:.82rem; padding:1rem; text-align:center}
+
+@media (max-width:640px){
+  body{padding:0}
+  .app{height:100%; border-radius:0; border:0}
+  .bubble{font-size:1.6rem}
+  .msg{max-width:88%}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="title">
+      <h1><span class="spin">🌀</span>Emoji Diffusion Model</h1>
+      <p class="sub">Masked diffusion over an atomic emoji vocabulary — send emoji, get emoji.</p>
+    </div>
+    <div class="status" id="status" title="model status">
+      <span class="dot" id="dot"></span><span id="statusText">connecting…</span>
+    </div>
+  </header>
+
+  <div id="log" role="log" aria-live="polite">
+    <div class="empty-state" id="emptyState">
+      <div class="big">🌀💬✨</div>
+      <p>Pick emoji below, or type them directly, then hit <b>Send</b>.<br>
+         The model replies only in emoji.</p>
+    </div>
+  </div>
+
+  <div id="picker" aria-label="emoji picker">
+    <div class="picker-top">
+      <input id="search" placeholder="Search the model's vocabulary…" autocomplete="off">
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div id="grid"></div>
+  </div>
+
+  <div class="composer">
+    <div class="row">
+      <button class="iconbtn" id="toggle" aria-expanded="false" title="Emoji picker (Esc to close)">😀</button>
+      <input id="input" placeholder="🎤🎶🌃" autocomplete="off" aria-label="emoji message">
+      <button class="iconbtn" id="back" title="Delete last emoji">⌫</button>
+      <button id="send">Send</button>
+    </div>
+    <div class="controls">
+      <label title="Diffusion denoising steps — more steps, slower but usually cleaner">
+        steps <input id="steps" type="range" min="8" max="128" step="8" value="32">
+        <b id="stepsOut">32</b>
+      </label>
+      <label title="Cap the reply length in emoji tokens. Auto lets the model choose.">
+        cap <input id="cap" type="range" min="0" max="8" step="1" value="0">
+        <b id="capOut">auto</b>
+      </label>
+      <span class="hint"><kbd>Enter</kbd> send · <kbd>Esc</kbd> close picker</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+  const log = $("log"), input = $("input"), send = $("send"), toggle = $("toggle"),
+        picker = $("picker"), grid = $("grid"), tabs = $("tabs"), search = $("search"),
+        steps = $("steps"), stepsOut = $("stepsOut"), cap = $("cap"), capOut = $("capOut"),
+        dot = $("dot"), statusText = $("statusText"), back = $("back");
+
+  let GROUPS = [];        // [{name, emoji:[…]}] from /vocab
+  let activeTab = 0;
+  let busy = false;
+
+  /* ---------------- emoji-aware helpers ---------------- */
+  // Split on grapheme clusters so ZWJ sequences / flags / skin tones stay whole.
+  const segmenter = (typeof Intl !== "undefined" && Intl.Segmenter)
+    ? new Intl.Segmenter(undefined, {granularity: "grapheme"})
+    : null;
+
+  function graphemes(str) {
+    if (!str) return [];
+    if (segmenter) return Array.from(segmenter.segment(str), s => s.segment);
+    return Array.from(str); // fallback: may split ZWJ sequences
+  }
+
+  /* ---------------- status ---------------- */
+  function setStatus(kind, text) {
+    dot.className = "dot" + (kind ? " " + kind : "");
+    statusText.textContent = text;
+  }
+
+  /* ---------------- vocabulary + picker ---------------- */
+  async function loadVocab() {
+    try {
+      const r = await fetch("/vocab");
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const j = await r.json();
+      GROUPS = j.groups || [];
+      const total = GROUPS.reduce((n, g) => n + g.emoji.length, 0);
+      if (j.mock) setStatus("mock", "mock mode · " + total + " emoji");
+      else setStatus("ok", (j.model || "model") + " · " + total + " emoji");
+      renderTabs();
+      renderGrid();
+    } catch (e) {
+      setStatus("err", "vocab unavailable");
+      grid.innerHTML = '<div class="picker-none">Could not load the model vocabulary. ' +
+                       'You can still type emoji directly.</div>';
+    }
+  }
+
+  function renderTabs() {
+    tabs.innerHTML = "";
+    GROUPS.forEach((g, i) => {
+      const b = document.createElement("button");
+      b.className = "tab" + (i === activeTab ? " active" : "");
+      b.textContent = g.name;
+      b.onclick = () => { activeTab = i; search.value = ""; renderTabs(); renderGrid(); };
+      tabs.appendChild(b);
+    });
+  }
+
+  function renderGrid() {
+    const q = search.value.trim();
+    let list;
+    if (q) {
+      const qg = graphemes(q);
+      list = GROUPS.flatMap(g => g.emoji).filter(e => qg.some(c => e.includes(c)));
+      if (!list.length) list = GROUPS.flatMap(g => g.emoji);
+    } else {
+      list = (GROUPS[activeTab] || {emoji: []}).emoji;
+    }
+    grid.innerHTML = "";
+    if (!list.length) {
+      grid.innerHTML = '<div class="picker-none">No emoji here.</div>';
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    for (const e of list) {
+      const b = document.createElement("button");
+      b.className = "em";
+      b.textContent = e;
+      b.title = e;
+      b.onclick = () => { input.value += e; input.focus(); };
+      frag.appendChild(b);
+    }
+    grid.appendChild(frag);
+  }
+
+  function openPicker(open) {
+    picker.classList.toggle("open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+    if (open) search.focus();
+  }
+
+  /* ---------------- chat rendering ---------------- */
+  function clearEmptyState() {
+    const es = $("emptyState");
+    if (es) es.remove();
+  }
+
+  function addMessage(role, text, metaText) {
+    clearEmptyState();
+    const wrap = document.createElement("div");
+    wrap.className = "msg " + role;
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    if (!text) { bubble.classList.add("empty"); bubble.textContent = "(no emoji returned)"; }
+    else bubble.textContent = text;
+    wrap.appendChild(bubble);
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    if (metaText) meta.appendChild(Object.assign(document.createElement("span"), {textContent: metaText}));
+    wrap.appendChild(meta);
+
+    log.appendChild(wrap);
+    log.scrollTop = log.scrollHeight;
+    return {wrap, bubble, meta};
+  }
+
+  function addTyping() {
+    clearEmptyState();
+    const wrap = document.createElement("div");
+    wrap.className = "msg bot";
+    wrap.innerHTML = '<div class="bubble typing"><i></i><i></i><i></i></div>';
+    log.appendChild(wrap);
+    log.scrollTop = log.scrollHeight;
+    return wrap;
+  }
+
+  /* ---------------- send ---------------- */
+  async function sendPrompt(promptText) {
+    const prompt = (promptText !== undefined ? promptText : input.value).trim();
+    if (!prompt || busy) return;
+
+    const toks = graphemes(prompt);
+    const userMsg = addMessage("user", prompt);
+
+    // "Shuffle & resend" is the project's headline demo: a permutation-stable
+    // model should answer a reordered prompt with a semantically similar reply.
+    if (toks.length > 1) {
+      const btn = document.createElement("button");
+      btn.textContent = "🔀 shuffle & resend";
+      btn.title = "Reorder this prompt and send it again — replies should stay similar";
+      btn.onclick = () => {
+        const s = toks.slice();
+        for (let i = s.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [s[i], s[j]] = [s[j], s[i]];
+        }
+        sendPrompt(s.join(""));
+      };
+      userMsg.meta.appendChild(btn);
+    }
+
+    if (promptText === undefined) input.value = "";
+    busy = true; send.disabled = true;
+    const typing = addTyping();
+    const t0 = performance.now();
+
+    try {
+      const body = {prompt, steps: +steps.value};
+      if (+cap.value > 0) body.cap = +cap.value;
+      const r = await fetch("/reply", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body)
+      });
+      const j = await r.json();
+      typing.remove();
+      const ms = Math.round(performance.now() - t0);
+      if (!r.ok) {
+        addMessage("bot", "", (j.detail || j.error || ("HTTP " + r.status)));
+      } else {
+        const bits = [ms + " ms", steps.value + " steps"];
+        if (j.note) bits.push(j.note);
+        addMessage("bot", j.reply || "", bits.join(" · "));
+      }
+    } catch (e) {
+      typing.remove();
+      addMessage("bot", "", "request failed — is the server still running?");
+    } finally {
+      busy = false; send.disabled = false; input.focus();
+    }
+  }
+
+  /* ---------------- wiring ---------------- */
+  send.onclick = () => sendPrompt();
+  toggle.onclick = () => openPicker(!picker.classList.contains("open"));
+  back.onclick = () => {
+    const g = graphemes(input.value);
+    g.pop();
+    input.value = g.join("");
+    input.focus();
+  };
+  search.oninput = renderGrid;
+  steps.oninput = () => stepsOut.textContent = steps.value;
+  cap.oninput = () => capOut.textContent = cap.value === "0" ? "auto" : cap.value;
+
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); sendPrompt(); }
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && picker.classList.contains("open")) {
+      openPicker(false); input.focus();
+    }
+  });
+
+  input.focus();
+  loadVocab();
+})();
+</script>
+</body>
+</html>
