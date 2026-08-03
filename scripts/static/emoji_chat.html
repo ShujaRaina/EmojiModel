@@ -71,8 +71,7 @@ h1 .spin{display:inline-block; margin-right:.4rem}
 .empty-state{
   margin:auto; text-align:center; color:var(--mut); max-width:420px;
 }
-.empty-state .big{font-size:2.6rem; letter-spacing:.15em}
-.empty-state p{font-size:.9rem; line-height:1.6; margin:.8rem 0 0}
+.empty-state p{font-size:.9rem; line-height:1.6; margin:0}
 
 .typing{display:flex; gap:5px; padding:.95rem 1rem}
 .typing i{
@@ -98,7 +97,7 @@ h1 .spin{display:inline-block; margin-right:.4rem}
   border-radius:12px; border:1px solid var(--line); background:#0a0c12;
   color:var(--ink); outline:none; font-family:inherit;
 }
-#input::placeholder{color:#556; font-size:1.15rem}
+#input::placeholder{color:#667; font-size:.95rem}
 #input:focus{border-color:var(--acc)}
 #send{
   flex:0 0 auto; height:46px; padding:0 1.5rem; border:0; border-radius:12px;
@@ -177,9 +176,8 @@ kbd{
 
   <div id="log" role="log" aria-live="polite">
     <div class="empty-state" id="emptyState">
-      <div class="big">🌀💬✨</div>
-      <p>Pick emoji below, or type them directly, then hit <b>Send</b>.<br>
-         The model replies only in emoji.</p>
+      <p>Pick emoji from the picker below, or type them directly,
+         then hit <b>Send</b>.<br>The model replies only in emoji.</p>
     </div>
   </div>
 
@@ -194,7 +192,7 @@ kbd{
   <div class="composer">
     <div class="row">
       <button class="iconbtn" id="toggle" aria-expanded="false" title="Emoji picker (Esc to close)">😀</button>
-      <input id="input" placeholder="🎤🎶🌃" autocomplete="off" aria-label="emoji message">
+      <input id="input" placeholder="Type emojis here…" autocomplete="off" aria-label="emoji message">
       <button class="iconbtn" id="back" title="Delete last emoji">⌫</button>
       <button id="send">Send</button>
     </div>
