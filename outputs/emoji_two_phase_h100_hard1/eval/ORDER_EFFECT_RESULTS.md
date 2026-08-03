@@ -1,5 +1,13 @@
 # Order-Effect Eval: MDLM vs Frontier Models
 
+> ⚠️ **Both findings below are undermined by how the data was generated.**
+> Prompts and replies in `emoji_reply.jsonl` are independent random draws from
+> the same per-topic emoji pool, so order carries no information by
+> construction and the best-of-6 "human" references are draws from that same
+> pool. Separately, the frontier order-effect numbers did not reproduce on the
+> held-out split — see `eval/HELDOUT_ORDER_EFFECT_RESULTS.md`. Read the
+> Limitations section of the README before citing anything here.
+
 Date: 2026-06-20
 
 Compares `hard1_last` against frontier flagships on emoji-reply permutation
@@ -46,9 +54,12 @@ per-sample data: `eval/order_eval_results.jsonl`.
    `resample_stability` is also low (0.290) — that instability is sampling
    noise, not order-sensitivity.
 
-2. **Human fidelity (best-of-6).** MDLM scores 0.553 uncapped / 0.858 capped vs
-   frontier's 0.046–0.201 — a 3–17× win. The 328M specialist reproduces human
-   emoji replies far better than the flagships.
+2. **Best-of-6 fidelity.** MDLM scores 0.553 uncapped / 0.858 capped vs
+   frontier's 0.046–0.201. ⚠️ This is **not** a human-fidelity result. The six
+   references are six random draws from a hand-authored per-topic emoji pool,
+   which our model trained on and the frontier models have never seen. The gap
+   mostly measures that asymmetry, not better emoji reasoning. Reporting it as
+   "reproduces human emoji replies better than the flagships" was wrong.
 
 ## Caveats
 

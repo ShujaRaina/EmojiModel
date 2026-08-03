@@ -1,18 +1,23 @@
 # Emoji Diffusion
 
-Emoji Diffusion is a masked-diffusion language model that replies in emoji.
-The project adapts MDLM to treat emoji sequences as holistic semantic objects
-instead of left-to-right text strings.
+Emoji Diffusion is a masked-diffusion language model that replies in emoji. It
+adapts MDLM to model emoji sequences with an atomic grapheme vocabulary, and
+adds the machinery to test whether treating them as holistic semantic objects
+beats left-to-right decoding.
 
 The core demo: give the model an emoji prompt, generate an emoji-only reply,
 then shuffle the prompt order and compare how stable the reply semantics are.
 
 [W&B report: Emoji](https://wandb.ai/derektang-the-university-of-chicago/emoji-model/reports/Emoji--VmlldzoxNzI4OTc5NQ)
 
-## Why This Exists
+> **Read [Limitations](#limitations) before citing any number here.** The
+> training data is synthetic and template-generated, which constrains what the
+> results can support. That section says exactly what does and does not follow.
 
-Emoji messages are not always ordinary token sequences. These prompts can carry
-similar intent even when their order changes:
+## The Hypothesis
+
+Emoji messages may not be ordinary token sequences. These prompts arguably
+carry similar intent even when their order changes:
 
 ```text
 😊😡😢
@@ -21,8 +26,13 @@ similar intent even when their order changes:
 ```
 
 Autoregressive models make order the main structure. Masked diffusion sees the
-whole expression while denoising, which makes it a better fit for emoji
+whole expression while denoising, which should make it a better fit for emoji
 semantics, permutation stability, and infilling.
+
+That is the hypothesis this project was built to test. It is worth being clear
+that the project **has not confirmed it** — see [Limitations](#limitations).
+What the project does provide is the machinery to test it: an emoji-native
+tokenizer, a conditional diffusion pipeline, and an evaluation harness.
 
 This repo builds on [MDLM](https://github.com/kuleshov-group/mdlm), the
 NeurIPS 2024 masked discrete diffusion language model, and adds:
@@ -194,12 +204,24 @@ The main W&B writeup is linked at the top of this README.
 
 ## Data
 
-The project includes a synthetic emoji-reply instruction dataset at
-`data/emoji_reply/emoji_reply.jsonl`. Rows use an instruction-tuning shape:
+The reply dataset at `data/emoji_reply/emoji_reply.jsonl` (2,520 rows) is
+**synthetic and template-generated** by `scripts/build_emoji_reply_dataset.py`.
+Rows use an instruction-tuning shape:
 
 ```json
 {"instruction": "I just got promoted", "input": "", "output": "🎉🥳👏", "topic": "celebration"}
 ```
+
+How it is generated matters, so it is worth stating plainly. The script holds a
+hand-authored `TOPICS` table mapping each topic to a pool of emoji, and then:
+
+```python
+for reply in emoji_combos(pool, k_min, k_max, per_message, rng):
+    prompt = emoji_combos(pool, k_min, k_max, 1, rng)[0]
+```
+
+Both the prompt and the reply are independent random draws from the *same*
+topic pool. See [Limitations](#limitations) for what that implies.
 
 Additional evaluation sets:
 
@@ -208,16 +230,69 @@ Additional evaluation sets:
 - `data/emoji_reply/curated_permutation.jsonl`
 - `data/emoji_reply/directional_probe.jsonl`
 
-## Notes for Judges
+## Limitations
+
+### The data generator assumes the hypothesis it was meant to test
+
+Because prompt and reply are independent draws from one topic pool, **no
+information flows from a prompt to its reply beyond the topic**, and neither
+side carries order. Two things follow:
+
+- **Order-invariance is a property of the generator, not a finding.** The
+  targets are unordered bags by construction, so a model that ignores order is
+  reproducing how the data was made. This cannot be evidence that emoji
+  expressions are inherently order-free.
+- **"Human fidelity" is not human.** The six references used for best-of-6
+  scoring are six random draws from the same pool. Scoring well means having
+  learned the pool. Our model trained on it; the frontier models never saw it.
+  The reported 3–17× gap largely reflects that asymmetry rather than better
+  emoji reasoning.
+
+### The frontier order-effect comparison did not reproduce
+
+`eval/HELDOUT_ORDER_EFFECT_RESULTS.md` re-ran the frontier baselines on the
+held-out split. Claude Opus 4.8 fell from 0.178 to 0.069 and Gemini 3.1 Pro
+flipped sign from 0.204 to −0.044. All three frontier models look approximately
+order-invariant there, so the separation reported on 24 groups does not hold at
+a wider sample. Those runs contain **no MDLM row** — producing one needs the
+Phase-2 checkpoint, which was never committed and is gone with the released
+H100 instance.
+
+### What the project does support
+
+- An emoji-native masked diffusion model that generates emoji directly, with an
+  atomic grapheme vocabulary rather than byte-pair fragments.
+- A working method for making an unconditional MDLM conditional, by clamping a
+  prefix and denoising only the response span — no change to the training
+  objective.
+- An evaluation harness with a genuine methodological contribution: the
+  **resample control**. Raw permutation stability conflates order-sensitivity
+  with diffusion sampling noise; `order_effect = resample_stability −
+  perm_stability` separates them. That control is what revealed the first
+  "weak result" to be sampler variance rather than order-sensitivity.
+- Infilling results, which are the most defensible number here — filling masked
+  positions is a real capability test, though still measured on synthetic data.
+
+### What would fix this
+
+Real emoji-reply pairs, where a reply genuinely responds to *that* prompt
+rather than to its topic. The tokenizer, training pipeline, and eval harness
+are all data-agnostic and would carry over unchanged. A useful acceptance test:
+shuffle replies among prompts within a topic and re-score — if the metric barely
+moves, the data carries no prompt→reply signal. The current dataset fails that
+test by construction.
+
+## Notes for Reviewers
 
 This is not a wrapper around a text LLM. The final reply model uses an atomic
 emoji vocabulary and generates emoji tokens directly with masked diffusion.
 Text appears only as supervision in the semantic-grounding phase and in the
 synthetic dataset construction/evaluation tooling.
 
-The hackathon thesis is simple: emoji strings are compact semantic expressions,
-and diffusion is a better modeling assumption than strict next-token decoding
-when order should not dominate meaning.
+The project was built in a day as a hackathon entry. Read it as an
+infrastructure and evaluation artifact — tokenizer, conditional-sampling
+method, and measurement harness — rather than as a validated claim about how
+emoji semantics work.
 
 ## Credits
 
