@@ -1,10 +1,18 @@
 # Emoji Diffusion Model: Process and Rationale
 
+> ⚠️ **This document describes the intended design, and the results reported
+> further down do not establish it.** The training data is synthetic: prompts
+> and replies are independent random draws from the same per-topic emoji pool,
+> so order carries no information by construction. A model that ignores order
+> is reproducing the generator, not discovering a property of emoji. See the
+> Limitations section of the README. Read this as a design rationale, not as a
+> validated result.
+
 ## Goal
 
 We are building a model that communicates in emoji space rather than text space.
 
-The core thesis is that emoji expressions often behave like global semantic
+The core hypothesis is that emoji expressions often behave like global semantic
 objects, not ordinary word sequences. For example:
 
 ```text
@@ -214,12 +222,17 @@ The demo should show:
 5. The diffusion model remains semantically stable.
 6. The autoregressive baseline is more order-sensitive.
 
-This directly supports the thesis:
+The demo illustrates the hypothesis:
 
 ```text
 Emoji expressions are not best modeled as ordinary next-token sequences.
 They are better treated as global semantic expressions.
 ```
+
+It does not support it. On the current synthetic data the model is order-stable
+because the targets were generated as unordered bags, so the demo would look
+the same whether or not the hypothesis is true of real emoji usage. It becomes
+evidence only on data where replies genuinely depend on their prompts.
 
 ## Current Run Artifacts
 
@@ -263,9 +276,9 @@ target bag-Jaccard:    0.0523
 This is a weak result: the model does generate emoji-only replies, but it does
 not yet support the order-invariant reasoning thesis.
 
-## Why This Process Works
+## Why The Process Is Structured This Way
 
-This process works because it separates three concerns:
+The design separates three concerns:
 
 1. Meaning
    - Learned from text embeddings during Phase 1.
@@ -276,5 +289,13 @@ This process works because it separates three concerns:
 3. Emoji-only reasoning
    - Learned during Phase 2 with masked diffusion.
 
-The result is a model that can use text-derived semantic grounding while
-operating entirely in emoji space at inference time.
+The result is a model that uses text-derived semantic grounding while operating
+entirely in emoji space at inference time. That separation is real and the
+pipeline does what it says.
+
+What is not established is the layer above it — that emoji semantics are
+genuinely order-free and that diffusion is therefore the better modelling
+assumption. The current data cannot distinguish that from the generator's own
+sampling procedure. The pipeline is data-agnostic, so the question stays open
+rather than answered, and answering it is a matter of swapping the dataset
+rather than changing anything here.
