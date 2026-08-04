@@ -9,7 +9,11 @@ export WANDB_DIR=${WANDB_DIR:-/tmp/wandb}
 export WANDB_CACHE_DIR=${WANDB_CACHE_DIR:-/tmp/wandb/cache}
 export WANDB_CONFIG_DIR=${WANDB_CONFIG_DIR:-/tmp/wandb/config}
 export TOKENIZERS_PARALLELISM=false
-export OMP_NUM_THREADS=${OMP_NUM_THREADS:-$(nproc)}
+# nproc is coreutils-only; macOS needs sysctl. Fall back to 4 if neither works.
+if [ -z "${OMP_NUM_THREADS:-}" ]; then
+  OMP_NUM_THREADS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+fi
+export OMP_NUM_THREADS
 export MPLCONFIGDIR=${MPLCONFIGDIR:-/tmp/matplotlib}
 
 mkdir -p "${WANDB_DIR}" "${WANDB_CACHE_DIR}" "${WANDB_CONFIG_DIR}" "${MPLCONFIGDIR}"
