@@ -1,0 +1,6 @@
+# Collapses duplicate author spellings that share a single email address.
+Shuja Raina <shuja.raina1@gmail.com> <shuja.raina1@gmail.com>
+Derek Tang <derektang101@gmail.com> <derektang101@gmail.com>
+
+# Upstream MDLM authors, inherited with the base history.
+Subham Sahoo <subbham@gmail.com> <subbham@gmail.com>

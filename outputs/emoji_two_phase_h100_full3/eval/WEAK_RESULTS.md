@@ -1,5 +1,15 @@
 # Weak Results: Repo Reply Permutation Eval
 
+> **Superseded — read this alongside
+> [`ORDER_EFFECT_RESULTS.md`](../../emoji_two_phase_h100_hard1/eval/ORDER_EFFECT_RESULTS.md).**
+>
+> The `perm_stability` number below has no resample control, so it cannot
+> separate order-sensitivity from diffusion sampling noise. The later
+> order-effect eval measures both and finds `order_effect ≈ 0` — the model is
+> order-invariant, and the low number here reflects sampler variance, not
+> order-sensitivity. This file is kept as a record of the earlier measurement;
+> do not cite it as the project's result.
+
 Checkpoint:
 
 ```text

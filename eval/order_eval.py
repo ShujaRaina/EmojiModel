@@ -33,46 +33,18 @@ import itertools
 import json
 import os
 import random
+import sys
 
-import regex
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-# ---- exact replicas of dataloader/emoji_metrics grapheme + bag logic ----
-def split_graphemes(text):
-    return regex.findall(r"\X", text or "")
-
-
-def is_emoji_grapheme(g):
-    if not g or g.isspace():
-        return False
-    return bool(
-        regex.search(r"\p{Extended_Pictographic}", g)
-        or regex.search(r"\p{Regional_Indicator}", g)
-        or "⃣" in g
-        or any("\U000E0020" <= ch <= "\U000E007F" for ch in g)
-    )
-
-
-def emoji_tokens(text):
-    return [g for g in split_graphemes(text) if is_emoji_grapheme(g)]
-
-
-def emoji_bag(text):
-    return collections.Counter(emoji_tokens(text))
-
-
-def bag_jaccard(pred, target):
-    pb, tb = emoji_bag(pred), emoji_bag(target)
-    if not pb and not tb:
-        return 1.0
-    keys = set(pb) | set(tb)
-    union = sum(max(pb[k], tb[k]) for k in keys)
-    overlap = sum(min(pb[k], tb[k]) for k in keys)
-    return overlap / union if union else 0.0
-
-
-def best_jaccard(pred, refs):
-    return max((bag_jaccard(pred, r) for r in refs), default=0.0)
+# Shared with the MDLM side via emoji_tokenization (regex-only, no torch), so
+# both sides of the comparison are scored by identical code.
+from emoji_tokenization import (  # noqa: E402
+    bag_jaccard,
+    best_jaccard,
+    emoji_bag,
+    extract_emoji_graphemes as emoji_tokens,
+)
 
 
 # ---- groups (mirror read_reply_data_groups; partition=all) + 6 refs ------
