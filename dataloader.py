@@ -1,3 +1,4 @@
+import collections
 import functools
 import hashlib
 import itertools
@@ -304,10 +305,28 @@ def _resolve_repo_path(path):
   return path
 
 
-def _sorted_emoji_vocab(emoji_strings):
-  vocab = set()
+def _sorted_emoji_vocab(emoji_strings, min_count=1, always_keep=()):
+  """Emoji vocabulary, optionally dropping tokens seen too rarely to learn.
+
+  Frequency was previously discarded, which suited curated synthetic pools
+  where every emoji recurs often. Real corpora have a long tail: in a 3.5k-pair
+  Bluesky sample, 26% of distinct emoji appear exactly once. Each such emoji
+  gets a dedicated token trained on a single example, which it cannot learn,
+  while still enlarging the output softmax. Requiring min_count>=3 there cuts
+  the vocabulary by 43% and costs 2.7% of token coverage; the remainder falls
+  back to [UNK_EMOJI].
+
+  always_keep holds emoji that stay in the vocabulary regardless of frequency,
+  used for the curated allowlist so a base vocabulary survives the threshold.
+  """
+  counts = collections.Counter()
   for text in emoji_strings:
-    vocab.update(extract_emoji_graphemes(text))
+    counts.update(extract_emoji_graphemes(text))
+  protected = set()
+  for text in always_keep:
+    protected.update(extract_emoji_graphemes(text))
+  vocab = {token for token, n in counts.items()
+           if n >= min_count or token in protected}
   return sorted(vocab)
 
 
@@ -563,7 +582,13 @@ def _build_atomic_emoji_vocab(config):
   for extra_file in config.data.get('emoji_vocab_extra_files', []):
     emoji_strings.extend(_read_emoji_strings(extra_file))
 
-  emoji_tokens = _sorted_emoji_vocab(emoji_strings)
+  # The curated allowlist is a deliberate base vocabulary, so it is exempt from
+  # the frequency threshold when it was requested as a source.
+  always_keep = COMMON_EMOJI_ALLOWLIST if 'common' in sources else ()
+  emoji_tokens = _sorted_emoji_vocab(
+    emoji_strings,
+    min_count=int(config.data.get('emoji_vocab_min_count', 1) or 1),
+    always_keep=always_keep)
   if not emoji_tokens:
     raise ValueError(
       'Atomic emoji vocab is empty. Provide Text2Emoji, data.data_file, '

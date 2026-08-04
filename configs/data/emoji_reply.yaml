@@ -10,6 +10,10 @@ emoji_vocab_sources:
   - data_file
   - common
 emoji_vocab_extra_files: []
+# Drop emoji seen fewer than this many times when building the atomic vocab.
+# 1 keeps every emoji (original behaviour). Raise it for real corpora, where a
+# long tail of once-seen emoji would get untrainable dedicated tokens.
+emoji_vocab_min_count: 1
 emoji_vocab_cache: ${.cache_dir}/atomic_emoji_vocab.json
 emoji_cache_version: v4
 emoji_challenge_set_path: data/emoji_reply/curated_permutation.jsonl
