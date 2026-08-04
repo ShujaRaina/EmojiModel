@@ -56,6 +56,19 @@ except ImportError:
 
 JETSTREAM = ('wss://jetstream2.us-east.bsky.network/subscribe'
              '?wantedCollections=app.bsky.feed.post')
+
+
+def stream_url(cursor_us=None):
+  """Jetstream URL, optionally replaying from a past cursor.
+
+  Live consumption is capped by how fast people post, measured at ~41 msg/sec.
+  Replaying from a past cursor is served as fast as the server can send,
+  measured at ~191 msg/sec, so historical windows collect several times faster
+  than waiting for real time.
+  """
+  if cursor_us is None:
+    return JETSTREAM
+  return f'{JETSTREAM}&cursor={int(cursor_us)}'
 PLC_DIRECTORY = 'https://plc.directory'
 USER_AGENT = 'emoji-diffusion-research/0.1'
 
@@ -274,19 +287,40 @@ async def collect(args):
       stats['kept'] += 1
 
   pending = set()
+  # Replay position, in unix microseconds. Advanced as events arrive so a
+  # reconnect resumes where the stream stopped instead of jumping to live.
+  cursor = None
+  if args.replay_hours:
+    cursor = int((time.time() - args.replay_hours * 3600) * 1_000_000)
+    print(f'replaying from {args.replay_hours}h ago', flush=True)
+  stop_at = (int((time.time() - args.stop_at_hours * 3600) * 1_000_000)
+             if args.stop_at_hours is not None else None)
+
   try:
     while not stop['now'] and stats['kept'] < args.target:
       try:
-        async with websockets.connect(JETSTREAM, open_timeout=30,
-                                      max_queue=4096) as socket:
-          print('connected to jetstream', flush=True)
+        async with websockets.connect(stream_url(cursor), open_timeout=30,
+                                      max_queue=8192) as socket:
+          print(f'connected to jetstream (cursor={cursor})', flush=True)
           while not stop['now'] and stats['kept'] < args.target:
             raw = await asyncio.wait_for(socket.recv(), timeout=60)
             stats['messages'] += 1
+            # Most messages are not emoji replies. Rejecting them on the raw
+            # bytes avoids parsing JSON we are about to discard.
+            if b'"reply"' not in (raw if isinstance(raw, bytes)
+                                  else raw.encode('utf-8', 'ignore')):
+              continue
             try:
               message = json.loads(raw)
             except ValueError:
               continue
+            event_time = message.get('time_us')
+            if event_time:
+              cursor = event_time
+              if stop_at is not None and event_time >= stop_at:
+                print('reached end of replay window', flush=True)
+                stop['now'] = True
+                break
             commit = message.get('commit') or {}
             if commit.get('operation') != 'create':
               continue
@@ -360,7 +394,17 @@ def main():
                       help='cap one account dominating the dataset')
   parser.add_argument('--max-per-response', type=int, default=3,
                       help='cap how often one identical reply may appear')
-  parser.add_argument('--concurrency', type=int, default=8)
+  parser.add_argument('--replay-hours', type=float, default=None,
+                      help='replay from this many hours ago instead of live; '
+                           'several times faster since the server is not '
+                           'waiting for new posts')
+  parser.add_argument('--stop-at-hours', type=float, default=None,
+                      help='stop once replay reaches this many hours ago. '
+                           'Use with --replay-hours to shard a time range '
+                           'across several processes writing separate files.')
+  parser.add_argument('--concurrency', type=int, default=24,
+                      help='in-flight parent lookups; replay produces '
+                           'candidates far faster than live')
   parser.add_argument('--http-timeout', type=int, default=12)
   parser.add_argument('--log-every', type=int, default=20000)
   args = parser.parse_args()
