@@ -309,6 +309,11 @@ async def collect(args):
             # bytes avoids parsing JSON we are about to discard.
             if b'"reply"' not in (raw if isinstance(raw, bytes)
                                   else raw.encode('utf-8', 'ignore')):
+              # Counted, not silently dropped: without this the `posts` and
+              # `replies` tallies below only ever saw messages that already
+              # mentioned a reply, so they reported near-identical values and
+              # looked like every post was a reply.
+              stats['skipped_no_reply_marker'] += 1
               continue
             try:
               message = json.loads(raw)
@@ -327,7 +332,10 @@ async def collect(args):
             record = commit.get('record') or {}
             if record.get('$type') != 'app.bsky.feed.post':
               continue
-            stats['posts'] += 1
+            # Named for what it measures: post creates that survived the
+            # prefilter, not all post creates. Total post creates seen is
+            # this plus skipped_no_reply_marker (minus non-post messages).
+            stats['posts_after_prefilter'] += 1
             reply_ref = record.get('reply')
             if not reply_ref:
               continue
