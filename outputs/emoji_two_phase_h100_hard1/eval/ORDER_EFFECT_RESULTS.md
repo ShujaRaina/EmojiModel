@@ -1,12 +1,37 @@
 # Order-Effect Eval: MDLM vs Frontier Models
 
-> ⚠️ **Both findings below are undermined by how the data was generated.**
-> Prompts and replies in `emoji_reply.jsonl` are independent random draws from
-> the same per-topic emoji pool, so order carries no information by
-> construction and the best-of-6 "human" references are draws from that same
-> pool. Separately, the frontier order-effect numbers did not reproduce on the
-> held-out split — see `eval/HELDOUT_ORDER_EFFECT_RESULTS.md`. Read the
-> Limitations section of the README before citing anything here.
+> # ⛔ RETRACTED
+>
+> **Do not cite any number in this file.** It is kept for provenance, not as
+> evidence. Six independent problems were verified, any one of the first four
+> disqualifying on its own. Full detail in the README's Limitations section.
+>
+> 1. **The invariance was trained in.** This run used
+>    `permutation_augment_prob: 1.0` on both prompt and response
+>    (`../phase2_reply/.hydra/config.yaml`). Order-invariance was injected as
+>    augmentation, not exhibited by the architecture. An AR model trained
+>    identically would show it too.
+> 2. **Evaluated on training data with a checkpoint this repo calls invalid.**
+>    `--split-partition all` reads the Phase-2 training file.
+>    `NO_LEAK_RESULTS.md` labels this checkpoint `leaky_hard1_last`,
+>    "reference-only … not valid … not admissible evidence."
+> 3. **A baseline that mostly failed, scored as success.**
+>    `bag_jaccard("","") == 1.0`, and Gemini-3.1-Pro returned empty in 57% of
+>    permutation and 64% of resample samples, inflating its `order_effect`.
+>    Filtering GPT-5.5's affected groups flips its sign.
+> 4. **The AR comparison is rigged and was never run.** The AR sampler decodes
+>    with `argmax`, so `resample_stability ≡ 1.0` and
+>    `order_effect ≡ 1 − perm_stability` by construction. No AR run exists.
+> 5. **Everything is inside the noise.** Four of five bootstrap CIs contain
+>    zero; MDLM's two configs give opposite signs.
+> 6. **The metric is not scale-free, and the checkpoint was picked using it.**
+>    Normalising to `1 − perm/resample` makes MDLM uncapped (+0.152) *more*
+>    order-sensitive than GPT-5.5 (−0.039). `HARD_RESULTS.md` records choosing
+>    a checkpoint with worse validation NLL "because it showed better
+>    permutation stability."
+>
+> The infilling results elsewhere in `outputs/` are unaffected — those use a
+> proper prompt-bag holdout and remain the project's defensible finding.
 
 Date: 2026-06-20
 

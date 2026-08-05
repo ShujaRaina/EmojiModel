@@ -1,12 +1,26 @@
 # Emoji Diffusion Model: Process and Rationale
 
-> ⚠️ **This document describes the intended design, and the results reported
-> further down do not establish it.** The training data is synthetic: prompts
-> and replies are independent random draws from the same per-topic emoji pool,
-> so order carries no information by construction. A model that ignores order
-> is reproducing the generator, not discovering a property of emoji. See the
-> Limitations section of the README. Read this as a design rationale, not as a
-> validated result.
+> ⚠️ **Design rationale, not a validated result. The order-invariance thesis
+> argued below is not established, and the evaluation that claimed to
+> demonstrate it has been retracted.**
+>
+> Three separate problems, each documented in the README's Limitations section:
+>
+> - **The data assumes the conclusion.** Prompts and replies in
+>   `emoji_reply.jsonl` are independent draws from one per-topic emoji pool, so
+>   order carries no information by construction.
+> - **The training assumes it too.** The reported run used
+>   `permutation_augment_prob: 1.0` on prompt and response, injecting
+>   order-invariance directly. An autoregressive model trained the same way
+>   would acquire it equally.
+> - **The inference does not hold.** Order-invariance would not imply diffusion
+>   over autoregression even if the premise were true: AR can represent
+>   exchangeable distributions given the same augmentation, and masked
+>   diffusion is provably close to any-order AR.
+>
+> What survives is the infilling result and the engineering — the atomic
+> tokenizer, the prefix-clamping conditional sampler, and the evaluation
+> harness. Read the sections below as the reasoning that motivated the build.
 
 ## Goal
 
