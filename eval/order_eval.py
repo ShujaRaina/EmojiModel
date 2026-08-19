@@ -143,7 +143,11 @@ SYSTEM = (
 
 
 def query(client, model, prompt, temperature, cap):
-    kw = dict(model=model, max_tokens=60,
+    # reasoning disabled uniformly so the comparison is like-for-like with a
+    # non-reasoning diffusion model; max_tokens high enough that no answer is
+    # truncated by stray reasoning tokens.
+    kw = dict(model=model, max_tokens=256,
+              extra_body={"reasoning": {"enabled": False}},
               messages=[{"role": "system", "content": SYSTEM},
                         {"role": "user", "content": prompt}])
     try:
